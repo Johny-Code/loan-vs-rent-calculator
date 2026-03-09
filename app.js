@@ -1,13 +1,372 @@
-﻿const SCENARIOS = [
-  { key: "low", label: "Niski", wiborField: "wiborLow" },
-  { key: "base", label: "Bazowy", wiborField: "wiborBase" },
-  { key: "high", label: "Wysoki", wiborField: "wiborHigh" },
-];
+﻿const SUPPORTED_LANGS = ["pl", "en"];
 
-const fmtMoney = new Intl.NumberFormat("pl-PL", {
+const TRANSLATIONS = {
+  pl: {
+    "meta.title": "Kredyt vs Wynajem",
+    "hero.title": "Kredyt vs Wynajem",
+    "hero.subtitle": "Porownanie majatku netto po sprzedazy mieszkania dla scenariuszy WIBOR.",
+    "section.params": "Parametry",
+    "section.summary": "Podsumowanie",
+    "section.results": "Wyniki porownania",
+    "section.sensitivity": "Analiza wrazliwosci",
+    "section.charts": "Wykresy",
+    "section.amortization": "Harmonogram kredytu (WIBOR bazowy)",
+    "params.explain1": "Parametry wejsciowe steruja obiema sciezkami. <code>Kwota kredytu = Wartosc * LTV</code>, <code>Wklad = Wartosc - Kredyt</code>, a <code>Kapital startowy najemcy = Wklad wlasny</code>, czyli srodki uzyte na zakup w scenariuszu najmu zostaja na starcie w portfelu inwestycyjnym.",
+    "params.explain2": "Scenariusz kredytu: co miesiac liczona jest rata annuitetowa, do ktorej moga dojsc miesieczne nadwyzki finansowe i dodatkowe nadplaty z harmonogramu. Scenariusz najmu: najemca placi czynsz i koszty najmu, a inwestuje kapital startowy, miesieczne nadwyzki oraz dodatnia roznice miedzy kosztem kredytu bazowego a kosztem najmu.",
+    "params.explain3": "Koszty wlasciciela to miesieczne koszty utrzymania po stronie kupujacego. Dodatkowe koszty najmu dzialaja analogicznie po stronie najemcy. Stopa inwestycji oraz podatek od zyskow dotycza obu portfeli inwestycyjnych.",
+    "form.propertyValue": "Wartosc nieruchomosci (PLN)",
+    "form.ltv": "LTV (%)",
+    "form.loanAmount": "Kwota kredytu (PLN)",
+    "form.downPayment": "Wklad wlasny (PLN)",
+    "form.termMonths": "Okres splaty (miesiace)",
+    "form.termYears": "Lata (pelne)",
+    "form.margin": "Marza (%)",
+    "form.wiborLow": "WIBOR niski (%)",
+    "form.wiborBase": "WIBOR bazowy (aktualny 6M) (%)",
+    "form.wiborHigh": "WIBOR wysoki (%)",
+    "form.monthlySurplus": "Nadwyzki finansowe (PLN/mc)",
+    "form.overpaySchedule": "Harmonogram dodatkowych nadplat (format: <code>miesiac:kwota</code>, np. <code>1:500, 24:2000</code>)",
+    "form.homeGrowth": "Roczna zmiana wartosci mieszkania (%)",
+    "form.entryCost": "Koszt wejscia w zakup (%)",
+    "form.saleCost": "Koszt sprzedazy (%)",
+    "form.ownerMonthlyCosts": "Koszty wlasciciela (PLN/mc)",
+    "form.renterMonthlyExtras": "Dodatkowe koszty najmu (PLN/mc)",
+    "form.investmentTaxRate": "Podatek od zyskow inwestycji (%)",
+    "form.rentStart": "Najem startowy (PLN/mc)",
+    "form.rentMode": "Model najmu",
+    "form.rentModeFixed": "Staly",
+    "form.rentModeStep": "Skokowy",
+    "form.rentStep": "Skok najmu (PLN)",
+    "form.rentStepInterval": "Skok najmu co ile miesiecy",
+    "form.investMode": "Inwestowanie roznicy",
+    "form.investRate": "Stopa inwestycji (%)",
+    "form.startingCapital": "Kapital startowy najemcy (PLN)",
+    "form.saleMonths": "Miesiace sprzedazy (CSV, np. <code>24,36,48</code>)",
+    "button.recalc": "Przelicz",
+    "lang.switch": "EN",
+    "lang.aria": "Switch language",
+    "scenario.low": "Niski",
+    "scenario.base": "Bazowy",
+    "scenario.high": "Wysoki",
+    "status.calculating": "Przeliczanie...",
+    "status.done": "Gotowe: {time}",
+    "status.invalid": "Gotowe, ale pominieto bledne wpisy harmonogramu: {items}",
+    "status.error": "Blad: {message}",
+    "term.years": "{years} lat",
+    "unit.monthShort": "m-c",
+    "summary.baseInstallment": "Rata bazowa (WIBOR bazowy)",
+    "summary.rentWealth": "Majatek wynajmu (m-c {month})",
+    "summary.buyWealth": "Majatek kupna (m-c {month})",
+    "summary.baseDiff": "Roznica bazowa (m-c {month})",
+    "summary.cross": "Przeciecie (bazowy)",
+    "summary.cross.none": "brak w horyzoncie",
+    "summary.monthValue": "{month} m-c",
+    "summary.payoff": "Pelna splata kredytu",
+    "summary.buyPortfolioPayoff": "Portfel kupna przy splacie",
+    "summary.rentPortfolioPayoff": "Portfel wynajmu przy tej samej dacie",
+    "summary.homeValue": "Mieszkanie warte (m-c {month})",
+    "summary.mortgageOutflow": "Poszlo na kredyt (m-c {month})",
+    "summary.ownerCosts": "Koszty wlasciciela (m-c {month})",
+    "summary.rentOutflow": "Poszlo na wynajem (m-c {month})",
+    "summary.totalOverpaid": "Nadplacono lacznie (m-c {month})",
+    "summary.explain1": "Obie sciezki liczymy jako majatek netto. Kupno = wartosc sprzedazy mieszkania netto + inwestycje po stronie kupujacego - saldo kredytu - koszt wejscia. Wynajem = portfel inwestycyjny najemcy, bez nieruchomosci.",
+    "summary.explain2": "Scenariusz wynajmu: najemca placi co miesiac czynsz i ewentualne dodatkowe koszty najmu, a rownolegle inwestuje kapital startowy rowny wkladowi wlasnemu. Do portfela trafiaja tez <code>Nadwyzki finansowe</code> oraz dodatnia roznica miedzy kosztem mieszkania przy kredycie bazowym a kosztem najmu.",
+    "summary.explain3": "Jesli kredyt bazowy zostaje splacony, konczy sie horyzont porownania dla podsumowania, harmonogramu i toru inwestowania w tym modelu. To pozwala porownywac oba scenariusze na tym samym zamknietym horyzoncie.",
+    "summary.previewMonth": "Miesiac podgladu:",
+    "note.baseInstallment": "PMT: marza + WIBOR bazowy, rata annuitetowa do miesiaca splaty.",
+    "note.rentWealth": "Portfel po podatku Belki, z kapitalem startowym i miesiecznymi doplatami.",
+    "note.buyWealth": "Sprzedaz mieszkania netto + inwestycje po stronie kupna - saldo kredytu - koszt wejscia.",
+    "note.baseDiff": "Kupno bazowe minus wynajem.",
+    "note.cross": "Pierwszy miesiac, gdy kupno przebija wynajem.",
+    "note.payoff": "Po tym miesiacu konczy sie harmonogram, wykres i dalsze inwestowanie w tym porownaniu.",
+    "note.buyPortfolioPayoff": "Wartosc inwestycji po stronie kupujacego na moment pelnej splaty.",
+    "note.rentPortfolioPayoff": "Wartosc portfela najemcy na moment splaty kredytu w scenariuszu bazowym.",
+    "note.homeValue": "Wartosc nieruchomosci po zmianie rocznej.",
+    "note.mortgageOutflow": "Suma rat i nadplat do wybranego miesiaca.",
+    "note.ownerCosts": "Ubezpieczenie, drobne remonty, utrzymanie wlasciciela.",
+    "note.rentOutflow": "Najem plus dodatkowe koszty najmu do wybranego miesiaca.",
+    "note.totalOverpaid": "Miesieczne nadwyzki i harmonogram nadplat wykorzystane przez kredyt.",
+    "diag.grossHome": "Wartosc mieszkania brutto",
+    "diag.grossHome.note": "Wartosc nieruchomosci po rocznej zmianie ceny.",
+    "diag.balance": "Saldo kredytu",
+    "diag.balance.note": "Kapital pozostaly do splaty w scenariuszu bazowym.",
+    "diag.equity": "Equity przed sprzedaza",
+    "diag.equity.note": "Wartosc mieszkania minus pozostale saldo kredytu.",
+    "diag.saleCost": "Koszt sprzedazy",
+    "diag.saleCost.note": "Procent od aktualnej wartosci mieszkania.",
+    "diag.entryCost": "Koszt wejscia",
+    "diag.entryCost.note": "Jednorazowy koszt zakupu liczony od wartosci startowej.",
+    "diag.buyPortfolio": "Portfel kupujacego",
+    "diag.buyPortfolio.note": "Srodki inwestowane po stronie kupna: niewykorzystane nadplaty i dodatnia przewaga najmu nad kosztem kredytu.",
+    "diag.rentPortfolio": "Portfel najemcy",
+    "diag.rentPortfolio.note": "Kapital startowy = wklad wlasny, plus nadwyzki finansowe i dodatnia roznica kosztu kredytu nad najmem.",
+    "diag.rentContrib": "Doplaty inwestycyjne najemcy",
+    "diag.rentContrib.note": "Suma miesiecznych doplat do portfela najemcy, bez kapitalu startowego.",
+    "diag.buyContrib": "Doplaty inwestycyjne kupujacego",
+    "diag.buyContrib.note": "Suma miesiecznych doplat do portfela kupujacego.",
+    "diag.mortgageOutflow": "Wydatki kredytowe",
+    "diag.mortgageOutflow.note": "Suma rat i nadplat do wybranego miesiaca.",
+    "diag.ownerCosts": "Koszty wlasciciela",
+    "diag.ownerCosts.note": "Koszty utrzymania wlasciciela doliczane co miesiac.",
+    "diag.rentOutflow": "Wydatki najmu",
+    "diag.rentOutflow.note": "Suma najmu i dodatkowych kosztow najmu do wybranego miesiaca.",
+    "diag.buyWealth": "Majatek netto kupna",
+    "diag.buyWealth.note": "Sprzedaz mieszkania netto + portfel kupna - saldo kredytu - koszt wejscia.",
+    "diag.rentWealth": "Majatek netto wynajmu",
+    "diag.rentWealth.note": "Portfel najemcy po podatku, przy tych samych zalozeniach inwestycyjnych.",
+    "diag.diff": "Roznica kupno - wynajem",
+    "diag.diff.note": "Dodatnia wartosc oznacza przewage zakupu w wybranym miesiacu.",
+    "diagnostics.title": "Jak powstal wynik",
+    "diagnostics.explain": "Tabela rozklada wynik bazowy na skladniki. Dzięki temu widac, czy przewaga kupna albo wynajmu wynika z equity mieszkania, kosztow wejscia, wysokosci salda kredytu czy z portfela inwestycyjnego.",
+    "diagnostics.col.item": "Element",
+    "diagnostics.col.value": "Wartosc",
+    "diagnostics.col.how": "Jak liczona",
+    "results.explain": "Tabela pokazuje majatek netto dla wynajmu oraz kupna w scenariuszach niski/bazowy/wysoki. Kolumny roznic to <code>kupno - wynajem</code>, wiec dodatnia wartosc oznacza przewage zakupu.",
+    "results.col.month": "Miesiac sprzedazy",
+    "results.col.rent": "Wynajem (PLN)",
+    "results.col.buyLow": "Kupno niski WIBOR (PLN)",
+    "results.col.buyBase": "Kupno bazowy WIBOR (PLN)",
+    "results.col.buyHigh": "Kupno wysoki WIBOR (PLN)",
+    "results.col.diffLow": "Roznica niski (K-W)",
+    "results.col.diffBase": "Roznica bazowy (K-W)",
+    "results.col.diffHigh": "Roznica wysoki (K-W)",
+    "sensitivity.explain": "Sprawdzamy wynik bazowy dla wybranego miesiaca przy zmianie wzrostu wartosci mieszkania oraz bazowego WIBOR. W komorce widzisz roznice: <code>kupno bazowe - wynajem</code>. To szybka analiza, jak wrazliwy jest wynik na zmiane rynku nieruchomosci i kosztu pieniadza.",
+    "sensitivity.header": "Wzrost mieszkania / WIBOR bazowy",
+    "charts.explain1": "Na osi X sa miesiace, na osi Y majatek netto. Domyslnie widok 5 lat (60 miesiecy), mozna oddalic do pelnego okresu kredytu, ale kazdy wykres i tak konczy sie w miesiacu pelnej splaty danego scenariusza.",
+    "charts.zoomIn": "Przybliz",
+    "charts.zoomOut": "Oddal",
+    "charts.range": "Zakres:",
+    "charts.monthShort": "m-cy",
+    "charts.explain2": "Os X: miesiac sprzedazy, os Y: majatek netto [PLN]. Czerwona linia oznacza pierwszy miesiac, gdy kupno > wynajem.",
+    "charts.low": "WIBOR niski",
+    "charts.base": "WIBOR bazowy",
+    "charts.high": "WIBOR wysoki",
+    "chart.nodata": "Brak danych.",
+    "chart.cross.none": "Przeciecie: brak",
+    "chart.cross": "Przeciecie: {month} m (Kupno > Wynajem)",
+    "chart.legend.buy": "Kupno ({title})",
+    "chart.legend.rent": "Wynajem",
+    "chart.legend.x": "Os X: miesiac sprzedazy (numery pod wykresem).",
+    "chart.legend.y": "Os Y: majatek netto [PLN] (numery po lewej).",
+    "amortization.explain": "Rata = odsetki + kapital + nadplata. Tabela pokazuje wylacznie realny okres splaty kredytu bazowego. Po splacie nie ma juz kolejnych wierszy z zerowymi ratami.",
+    "amortization.col.month": "Miesiac",
+    "amortization.col.total": "Rata calkowita (PLN)",
+    "amortization.col.interest": "Odsetki (PLN)",
+    "amortization.col.principal": "Kapital w racie (PLN)",
+    "amortization.col.overpay": "Nadplata (PLN)",
+    "amortization.col.balance": "Pozostalo do splaty (PLN)"
+  },
+  en: {
+    "meta.title": "Mortgage vs Rent",
+    "hero.title": "Mortgage vs Rent",
+    "hero.subtitle": "Compare net wealth after selling a property across WIBOR scenarios.",
+    "section.params": "Parameters",
+    "section.summary": "Summary",
+    "section.results": "Comparison results",
+    "section.sensitivity": "Sensitivity analysis",
+    "section.charts": "Charts",
+    "section.amortization": "Mortgage amortization (base WIBOR)",
+    "params.explain1": "Input parameters drive both paths. <code>Loan amount = Property value * LTV</code>, <code>Down payment = Property value - Loan</code>, and <code>Renter starting capital = Down payment</code>, so funds used for purchase stay invested in the rent scenario.",
+    "params.explain2": "Mortgage scenario: an annuity installment is calculated every month, with monthly surplus and extra schedule payments added on top. Rent scenario: the renter pays rent and rent-related costs, while investing starting capital, monthly surplus, and the positive difference between base mortgage cost and rent cost.",
+    "params.explain3": "Owner costs are monthly maintenance costs on the buying side. Additional rent costs work analogously on the renter side. Investment rate and capital gains tax apply to both investment portfolios.",
+    "form.propertyValue": "Property value (PLN)",
+    "form.ltv": "LTV (%)",
+    "form.loanAmount": "Loan amount (PLN)",
+    "form.downPayment": "Down payment (PLN)",
+    "form.termMonths": "Repayment period (months)",
+    "form.termYears": "Years (full)",
+    "form.margin": "Bank margin (%)",
+    "form.wiborLow": "WIBOR low (%)",
+    "form.wiborBase": "WIBOR base (current 6M) (%)",
+    "form.wiborHigh": "WIBOR high (%)",
+    "form.monthlySurplus": "Monthly surplus (PLN/month)",
+    "form.overpaySchedule": "Extra prepayment schedule (format: <code>month:amount</code>, e.g. <code>1:500, 24:2000</code>)",
+    "form.homeGrowth": "Annual property value change (%)",
+    "form.entryCost": "Purchase entry cost (%)",
+    "form.saleCost": "Sale cost (%)",
+    "form.ownerMonthlyCosts": "Owner monthly costs (PLN/month)",
+    "form.renterMonthlyExtras": "Additional rent costs (PLN/month)",
+    "form.investmentTaxRate": "Investment gains tax (%)",
+    "form.rentStart": "Starting rent (PLN/month)",
+    "form.rentMode": "Rent model",
+    "form.rentModeFixed": "Fixed",
+    "form.rentModeStep": "Stepwise",
+    "form.rentStep": "Rent increase step (PLN)",
+    "form.rentStepInterval": "Rent step every N months",
+    "form.investMode": "Invest the difference",
+    "form.investRate": "Investment rate (%)",
+    "form.startingCapital": "Renter starting capital (PLN)",
+    "form.saleMonths": "Sale months (CSV, e.g. <code>24,36,48</code>)",
+    "button.recalc": "Recalculate",
+    "lang.switch": "PL",
+    "lang.aria": "Switch language",
+    "scenario.low": "Low",
+    "scenario.base": "Base",
+    "scenario.high": "High",
+    "status.calculating": "Calculating...",
+    "status.done": "Done: {time}",
+    "status.invalid": "Done, but skipped invalid schedule entries: {items}",
+    "status.error": "Error: {message}",
+    "term.years": "{years} years",
+    "unit.monthShort": "m",
+    "summary.baseInstallment": "Base installment (base WIBOR)",
+    "summary.rentWealth": "Rent wealth (m {month})",
+    "summary.buyWealth": "Buy wealth (m {month})",
+    "summary.baseDiff": "Base difference (m {month})",
+    "summary.cross": "Crossing (base)",
+    "summary.cross.none": "none in horizon",
+    "summary.monthValue": "m {month}",
+    "summary.payoff": "Full mortgage payoff",
+    "summary.buyPortfolioPayoff": "Buy portfolio at payoff",
+    "summary.rentPortfolioPayoff": "Rent portfolio at the same date",
+    "summary.homeValue": "Property value (m {month})",
+    "summary.mortgageOutflow": "Total mortgage outflow (m {month})",
+    "summary.ownerCosts": "Owner costs (m {month})",
+    "summary.rentOutflow": "Total rent outflow (m {month})",
+    "summary.totalOverpaid": "Total overpaid (m {month})",
+    "summary.explain1": "Both paths are measured as net wealth. Buying = net sale value + buyer investments - mortgage balance - entry cost. Renting = renter investment portfolio, without property ownership.",
+    "summary.explain2": "Rent scenario: renter pays monthly rent and optional additional rent costs, while investing starting capital equal to down payment. Portfolio contributions also include <code>Monthly surplus</code> and the positive difference between base mortgage housing cost and rent cost.",
+    "summary.explain3": "When base mortgage is paid off, comparison horizon ends for summary, amortization and investment tracks in this model. This keeps both scenarios comparable on the same closed horizon.",
+    "summary.previewMonth": "Preview month:",
+    "note.baseInstallment": "PMT: margin + base WIBOR, annuity payment until payoff month.",
+    "note.rentWealth": "After-tax investment portfolio with starting capital and monthly contributions.",
+    "note.buyWealth": "Net sale proceeds + buy-side investments - remaining mortgage balance - entry cost.",
+    "note.baseDiff": "Base buy result minus rent result.",
+    "note.cross": "First month when buying outperforms renting.",
+    "note.payoff": "After this month, schedule, chart horizon and further investing are frozen in this comparison.",
+    "note.buyPortfolioPayoff": "Investment value on the buy side at full payoff.",
+    "note.rentPortfolioPayoff": "Renter portfolio value at base mortgage payoff date.",
+    "note.homeValue": "Property value after annual growth.",
+    "note.mortgageOutflow": "Total installments and overpayments up to selected month.",
+    "note.ownerCosts": "Insurance, minor repairs, owner maintenance.",
+    "note.rentOutflow": "Rent plus additional rent costs up to selected month.",
+    "note.totalOverpaid": "Monthly surplus and schedule-based overpayments used by mortgage.",
+    "diag.grossHome": "Gross property value",
+    "diag.grossHome.note": "Property value after annual growth.",
+    "diag.balance": "Mortgage balance",
+    "diag.balance.note": "Remaining principal balance in base scenario.",
+    "diag.equity": "Equity before sale",
+    "diag.equity.note": "Property value minus remaining mortgage balance.",
+    "diag.saleCost": "Sale cost",
+    "diag.saleCost.note": "Percent of current property value.",
+    "diag.entryCost": "Entry cost",
+    "diag.entryCost.note": "One-time purchase cost from starting property value.",
+    "diag.buyPortfolio": "Buyer portfolio",
+    "diag.buyPortfolio.note": "Buy-side invested funds: unused overpayments and positive rent advantage over mortgage cost.",
+    "diag.rentPortfolio": "Renter portfolio",
+    "diag.rentPortfolio.note": "Starting capital = down payment, plus monthly surplus and positive mortgage-over-rent cost difference.",
+    "diag.rentContrib": "Renter investment contributions",
+    "diag.rentContrib.note": "Total monthly renter contributions excluding starting capital.",
+    "diag.buyContrib": "Buyer investment contributions",
+    "diag.buyContrib.note": "Total monthly buyer contributions.",
+    "diag.mortgageOutflow": "Mortgage cash outflow",
+    "diag.mortgageOutflow.note": "Total installments and overpayments up to selected month.",
+    "diag.ownerCosts": "Owner costs",
+    "diag.ownerCosts.note": "Owner maintenance costs added monthly.",
+    "diag.rentOutflow": "Rent cash outflow",
+    "diag.rentOutflow.note": "Total rent and additional rent costs up to selected month.",
+    "diag.buyWealth": "Buy net wealth",
+    "diag.buyWealth.note": "Net property sale value + buyer portfolio - mortgage balance - entry cost.",
+    "diag.rentWealth": "Rent net wealth",
+    "diag.rentWealth.note": "After-tax renter portfolio under the same assumptions.",
+    "diag.diff": "Difference buy - rent",
+    "diag.diff.note": "Positive value means buying is better in selected month.",
+    "diagnostics.title": "How the result is built",
+    "diagnostics.explain": "This table breaks the base result into components. It shows whether buy vs rent advantage comes from home equity, entry/sale costs, mortgage balance, or investment portfolio.",
+    "diagnostics.col.item": "Item",
+    "diagnostics.col.value": "Value",
+    "diagnostics.col.how": "How calculated",
+    "results.explain": "This table shows net wealth for rent and buy under low/base/high WIBOR scenarios. Difference columns are <code>buy - rent</code>, so positive values mean buying is better.",
+    "results.col.month": "Sale month",
+    "results.col.rent": "Rent (PLN)",
+    "results.col.buyLow": "Buy low WIBOR (PLN)",
+    "results.col.buyBase": "Buy base WIBOR (PLN)",
+    "results.col.buyHigh": "Buy high WIBOR (PLN)",
+    "results.col.diffLow": "Diff low (B-R)",
+    "results.col.diffBase": "Diff base (B-R)",
+    "results.col.diffHigh": "Diff high (B-R)",
+    "sensitivity.explain": "Base result for selected month is stress-tested against home growth and base WIBOR changes. Each cell shows <code>base buy - rent</code>. This is a quick sensitivity check for real-estate trend and cost of money.",
+    "sensitivity.header": "Home growth / base WIBOR",
+    "charts.explain1": "X axis shows months and Y axis shows net wealth. Default view is 5 years (60 months); you can zoom out to full mortgage period, but each chart still ends at payoff month for its scenario.",
+    "charts.zoomIn": "Zoom in",
+    "charts.zoomOut": "Zoom out",
+    "charts.range": "Range:",
+    "charts.monthShort": "mo",
+    "charts.explain2": "X axis: sale month, Y axis: net wealth [PLN]. Red line marks first month where buying beats renting.",
+    "charts.low": "WIBOR low",
+    "charts.base": "WIBOR base",
+    "charts.high": "WIBOR high",
+    "chart.nodata": "No data.",
+    "chart.cross.none": "Crossing: none",
+    "chart.cross": "Crossing: {month} m (Buy > Rent)",
+    "chart.legend.buy": "Buy ({title})",
+    "chart.legend.rent": "Rent",
+    "chart.legend.x": "X axis: sale month (numbers below chart).",
+    "chart.legend.y": "Y axis: net wealth [PLN] (numbers on the left).",
+    "amortization.explain": "Installment = interest + principal + overpayment. Table shows only the actual payoff period for base mortgage. After payoff there are no extra zero-installment rows.",
+    "amortization.col.month": "Month",
+    "amortization.col.total": "Total installment (PLN)",
+    "amortization.col.interest": "Interest (PLN)",
+    "amortization.col.principal": "Principal in installment (PLN)",
+    "amortization.col.overpay": "Overpayment (PLN)",
+    "amortization.col.balance": "Remaining balance (PLN)"
+  }
+};
+
+function getInitialLanguage() {
+  const saved = localStorage.getItem("appLang");
+  if (saved && SUPPORTED_LANGS.includes(saved)) return saved;
+  const browser = (navigator.language || "en").toLowerCase();
+  return browser.startsWith("pl") ? "pl" : "en";
+}
+
+let currentLang = getInitialLanguage();
+let fmtMoney = new Intl.NumberFormat(currentLang === "pl" ? "pl-PL" : "en-US", {
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 });
+let appReady = false;
+
+function t(key, vars = {}) {
+  const dict = TRANSLATIONS[currentLang] || TRANSLATIONS.pl;
+  const raw = dict[key] || TRANSLATIONS.pl[key] || key;
+  return raw.replace(/\{(\w+)\}/g, (_, name) => (vars[name] ?? `{${name}}`));
+}
+
+function applyTranslations() {
+  document.documentElement.lang = currentLang;
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    el.innerHTML = t(key);
+  });
+  const switchText = byId("langSwitchText");
+  if (switchText) switchText.textContent = t("lang.switch");
+  const switchBtn = byId("langSwitch");
+  if (switchBtn) switchBtn.setAttribute("aria-label", t("lang.aria"));
+  document.title = t("meta.title");
+}
+
+function setLanguage(lang) {
+  currentLang = SUPPORTED_LANGS.includes(lang) ? lang : "pl";
+  localStorage.setItem("appLang", currentLang);
+  fmtMoney = new Intl.NumberFormat(currentLang === "pl" ? "pl-PL" : "en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+  applyTranslations();
+  if (appReady) calculateAll();
+}
+
+function formatMoney(value) {
+  const num = Number(value);
+  return fmtMoney.format(Number.isFinite(num) ? Math.round(num) : 0);
+}
+
+const SCENARIOS = [
+  { key: "low", wiborField: "wiborLow" },
+  { key: "base", wiborField: "wiborBase" },
+  { key: "high", wiborField: "wiborHigh" },
+];
 
 function byId(id) {
   return document.getElementById(id);
@@ -308,7 +667,7 @@ function collectParams() {
   byId("loanAmount").value = String(Math.round(loanAmount));
   byId("downPayment").value = String(Math.round(downPayment));
   byId("startingCapital").value = String(Math.round(downPayment));
-  byId("termYearsInfo").value = termMonths % 12 === 0 ? `${termMonths / 12} lat` : "";
+  byId("termYearsInfo").value = termMonths % 12 === 0 ? t("term.years", { years: termMonths / 12 }) : "";
 
   return {
     propertyValue,
@@ -367,7 +726,7 @@ function evaluateBaseDifferenceAtMonth(params, summaryMonth, wiborBasePct, homeG
 
 function calculateAll() {
   const status = byId("status");
-  status.textContent = "Przeliczanie...";
+  status.textContent = t("status.calculating");
 
   const params = collectParams();
   const { map: scheduleMap, invalid } = parseOverpaySchedule(byId("overpaySchedule").value);
@@ -415,13 +774,13 @@ function calculateAll() {
   renderTable(resultRows);
   renderSensitivityTable(params, summaryMonth, scheduleMap);
   renderAmortizationTable(model.mortgages.base.rows, model.horizons.base);
-  renderChart("chartLow", "WIBOR niski", model.buyTracks.low, model.rentTrack, model.horizons.low, viewMonths);
-  renderChart("chartBase", "WIBOR bazowy", model.buyTracks.base, model.rentTrack, model.horizons.base, viewMonths);
-  renderChart("chartHigh", "WIBOR wysoki", model.buyTracks.high, model.rentTrack, model.horizons.high, viewMonths);
+  renderChart("chartLow", t("scenario.low"), model.buyTracks.low, model.rentTrack, model.horizons.low, viewMonths);
+  renderChart("chartBase", t("scenario.base"), model.buyTracks.base, model.rentTrack, model.horizons.base, viewMonths);
+  renderChart("chartHigh", t("scenario.high"), model.buyTracks.high, model.rentTrack, model.horizons.high, viewMonths);
 
   status.textContent = invalid.length > 0
-    ? `Gotowe, ale pominieto bledne wpisy harmonogramu: ${invalid.join(" | ")}`
-    : `Gotowe: ${new Date().toLocaleTimeString("pl-PL")}`;
+    ? t("status.invalid", { items: invalid.join(" | ") })
+    : t("status.done", { time: new Date().toLocaleTimeString(currentLang === "pl" ? "pl-PL" : "en-US") });
 }
 
 function renderSummary(model, summaryMonth) {
@@ -438,19 +797,19 @@ function renderSummary(model, summaryMonth) {
   const rentPortfolioAtPayoff = safePoint(model.rentTrack, payoffMonth, "investmentAfterTax");
 
   summary.innerHTML = "";
-  summary.appendChild(kpi("Rata bazowa (WIBOR bazowy)", `${fmtMoney.format(model.mortgages.base.monthlyPayment)} PLN`, "PMT: marza + WIBOR bazowy, rata annuitetowa do miesiaca splaty."));
-  summary.appendChild(kpi(`Majatek wynajmu (m-c ${summaryMonth})`, `${fmtMoney.format(rentAtMonth)} PLN`, "Portfel po podatku Belki, z kapitalem startowym i miesiecznymi doplatami."));
-  summary.appendChild(kpi(`Majatek kupna (m-c ${summaryMonth})`, `${fmtMoney.format(buyBaseAtMonth)} PLN`, "Sprzedaz mieszkania netto + inwestycje po stronie kupna - saldo kredytu - koszt wejscia."));
-  summary.appendChild(kpi(`Roznica bazowa (m-c ${summaryMonth})`, `${fmtMoney.format(diffBaseAtMonth)} PLN`, "Kupno bazowe minus wynajem."));
-  summary.appendChild(kpi("Przeciecie (bazowy)", crossBase ? `${crossBase} m-c` : "brak w horyzoncie", "Pierwszy miesiac, gdy kupno przebija wynajem."));
-  summary.appendChild(kpi("Pelna splata kredytu", `${payoffMonth} m-c`, "Po tym miesiacu konczy sie harmonogram, wykres i dalsze inwestowanie w tym porownaniu."));
-  summary.appendChild(kpi("Portfel kupna przy splacie", `${fmtMoney.format(buyPortfolioAtPayoff)} PLN`, "Wartosc inwestycji po stronie kupujacego na moment pelnej splaty."));
-  summary.appendChild(kpi("Portfel wynajmu przy tej samej dacie", `${fmtMoney.format(rentPortfolioAtPayoff)} PLN`, "Wartosc portfela najemcy na moment splaty kredytu w scenariuszu bazowym."));
-  summary.appendChild(kpi(`Mieszkanie warte (m-c ${summaryMonth})`, `${fmtMoney.format(baseBuyRow ? baseBuyRow.homeValue : 0)} PLN`, "Wartosc nieruchomosci po zmianie rocznej."));
-  summary.appendChild(kpi(`Poszlo na kredyt (m-c ${summaryMonth})`, `${fmtMoney.format(mortgageBaseRow ? mortgageBaseRow.cumulativeCashOut : 0)} PLN`, "Suma rat i nadplat do wybranego miesiaca."));
-  summary.appendChild(kpi(`Koszty wlasciciela (m-c ${summaryMonth})`, `${fmtMoney.format(mortgageBaseRow ? mortgageBaseRow.cumulativeOwnerCosts : 0)} PLN`, "Ubezpieczenie, drobne remonty, utrzymanie wlasciciela."));
-  summary.appendChild(kpi(`Poszlo na wynajem (m-c ${summaryMonth})`, `${fmtMoney.format(rentRow ? rentRow.cumulativeRentCost : 0)} PLN`, "Najem plus dodatkowe koszty najmu do wybranego miesiaca."));
-  summary.appendChild(kpi(`Nadplacono lacznie (m-c ${summaryMonth})`, `${fmtMoney.format(mortgageBaseRow ? mortgageBaseRow.cumulativeOverpay : 0)} PLN`, "Miesieczne nadwyzki i harmonogram nadplat wykorzystane przez kredyt."));
+  summary.appendChild(kpi(t("summary.baseInstallment"), `${formatMoney(model.mortgages.base.monthlyPayment)} PLN`, t("note.baseInstallment")));
+  summary.appendChild(kpi(t("summary.rentWealth", { month: summaryMonth }), `${formatMoney(rentAtMonth)} PLN`, t("note.rentWealth")));
+  summary.appendChild(kpi(t("summary.buyWealth", { month: summaryMonth }), `${formatMoney(buyBaseAtMonth)} PLN`, t("note.buyWealth")));
+  summary.appendChild(kpi(t("summary.baseDiff", { month: summaryMonth }), `${formatMoney(diffBaseAtMonth)} PLN`, t("note.baseDiff")));
+  summary.appendChild(kpi(t("summary.cross"), crossBase ? t("summary.monthValue", { month: crossBase }) : t("summary.cross.none"), t("note.cross")));
+  summary.appendChild(kpi(t("summary.payoff"), t("summary.monthValue", { month: payoffMonth }), t("note.payoff")));
+  summary.appendChild(kpi(t("summary.buyPortfolioPayoff"), `${formatMoney(buyPortfolioAtPayoff)} PLN`, t("note.buyPortfolioPayoff")));
+  summary.appendChild(kpi(t("summary.rentPortfolioPayoff"), `${formatMoney(rentPortfolioAtPayoff)} PLN`, t("note.rentPortfolioPayoff")));
+  summary.appendChild(kpi(t("summary.homeValue", { month: summaryMonth }), `${formatMoney(baseBuyRow ? baseBuyRow.homeValue : 0)} PLN`, t("note.homeValue")));
+  summary.appendChild(kpi(t("summary.mortgageOutflow", { month: summaryMonth }), `${formatMoney(mortgageBaseRow ? mortgageBaseRow.cumulativeCashOut : 0)} PLN`, t("note.mortgageOutflow")));
+  summary.appendChild(kpi(t("summary.ownerCosts", { month: summaryMonth }), `${formatMoney(mortgageBaseRow ? mortgageBaseRow.cumulativeOwnerCosts : 0)} PLN`, t("note.ownerCosts")));
+  summary.appendChild(kpi(t("summary.rentOutflow", { month: summaryMonth }), `${formatMoney(rentRow ? rentRow.cumulativeRentCost : 0)} PLN`, t("note.rentOutflow")));
+  summary.appendChild(kpi(t("summary.totalOverpaid", { month: summaryMonth }), `${formatMoney(mortgageBaseRow ? mortgageBaseRow.cumulativeOverpay : 0)} PLN`, t("note.totalOverpaid")));
 }
 
 function renderDiagnostics(model, summaryMonth) {
@@ -463,26 +822,26 @@ function renderDiagnostics(model, summaryMonth) {
   if (!buyRow || !rentRow || !mortgageRow) return;
 
   const rows = [
-    ["Wartosc mieszkania brutto", buyRow.homeValue, "Wartosc nieruchomosci po rocznej zmianie ceny."],
-    ["Saldo kredytu", mortgageRow.endBalance, "Kapital pozostaly do splaty w scenariuszu bazowym."],
-    ["Equity przed sprzedaza", buyRow.equityBeforeSale, "Wartosc mieszkania minus pozostale saldo kredytu."],
-    ["Koszt sprzedazy", buyRow.saleCostAmount, "Procent od aktualnej wartosci mieszkania."],
-    ["Koszt wejscia", buyRow.entryCostAmount, "Jednorazowy koszt zakupu liczony od wartosci startowej."],
-    ["Portfel kupujacego", buyRow.investmentAfterTax, "Srodki inwestowane po stronie kupna: niewykorzystane nadplaty i dodatnia przewaga najmu nad kosztem kredytu."],
-    ["Portfel najemcy", rentRow.investmentAfterTax, "Kapital startowy = wklad wlasny, plus nadwyzki finansowe i dodatnia roznica kosztu kredytu nad najmem."],
-    ["Doplaty inwestycyjne najemcy", rentRow.cumulativeContribution, "Suma miesiecznych doplat do portfela najemcy, bez kapitalu startowego."],
-    ["Doplaty inwestycyjne kupujacego", buyRow.cumulativeContribution, "Suma miesiecznych doplat do portfela kupujacego."],
-    ["Wydatki kredytowe", mortgageRow.cumulativeCashOut, "Suma rat i nadplat do wybranego miesiaca."],
-    ["Koszty wlasciciela", mortgageRow.cumulativeOwnerCosts, "Koszty utrzymania wlasciciela doliczane co miesiac."],
-    ["Wydatki najmu", rentRow.cumulativeRentCost, "Suma najmu i dodatkowych kosztow najmu do wybranego miesiaca."],
-    ["Majatek netto kupna", buyRow.wealth, "Sprzedaz mieszkania netto + portfel kupna - saldo kredytu - koszt wejscia."],
-    ["Majatek netto wynajmu", rentRow.wealth, "Portfel najemcy po podatku, przy tych samych zalozeniach inwestycyjnych."],
-    ["Roznica kupno - wynajem", buyRow.wealth - rentRow.wealth, "Dodatnia wartosc oznacza przewage zakupu w wybranym miesiacu."],
+    [t("diag.grossHome"), buyRow.homeValue, t("diag.grossHome.note")],
+    [t("diag.balance"), mortgageRow.endBalance, t("diag.balance.note")],
+    [t("diag.equity"), buyRow.equityBeforeSale, t("diag.equity.note")],
+    [t("diag.saleCost"), buyRow.saleCostAmount, t("diag.saleCost.note")],
+    [t("diag.entryCost"), buyRow.entryCostAmount, t("diag.entryCost.note")],
+    [t("diag.buyPortfolio"), buyRow.investmentAfterTax, t("diag.buyPortfolio.note")],
+    [t("diag.rentPortfolio"), rentRow.investmentAfterTax, t("diag.rentPortfolio.note")],
+    [t("diag.rentContrib"), rentRow.cumulativeContribution, t("diag.rentContrib.note")],
+    [t("diag.buyContrib"), buyRow.cumulativeContribution, t("diag.buyContrib.note")],
+    [t("diag.mortgageOutflow"), mortgageRow.cumulativeCashOut, t("diag.mortgageOutflow.note")],
+    [t("diag.ownerCosts"), mortgageRow.cumulativeOwnerCosts, t("diag.ownerCosts.note")],
+    [t("diag.rentOutflow"), rentRow.cumulativeRentCost, t("diag.rentOutflow.note")],
+    [t("diag.buyWealth"), buyRow.wealth, t("diag.buyWealth.note")],
+    [t("diag.rentWealth"), rentRow.wealth, t("diag.rentWealth.note")],
+    [t("diag.diff"), buyRow.wealth - rentRow.wealth, t("diag.diff.note")],
   ];
 
   for (const [label, value, note] of rows) {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${label}</td><td>${fmtMoney.format(value)} PLN</td><td>${note}</td>`;
+    tr.innerHTML = `<td>${label}</td><td>${formatMoney(value)} PLN</td><td>${note}</td>`;
     tbody.appendChild(tr);
   }
 }
@@ -501,13 +860,13 @@ function renderTable(rows) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${r.month}</td>
-      <td>${fmtMoney.format(r.rent)}</td>
-      <td>${fmtMoney.format(r.buyLow)}</td>
-      <td>${fmtMoney.format(r.buyBase)}</td>
-      <td>${fmtMoney.format(r.buyHigh)}</td>
-      <td class="${r.diffLow >= 0 ? "positive" : "negative"}">${fmtMoney.format(r.diffLow)}</td>
-      <td class="${r.diffBase >= 0 ? "positive" : "negative"}">${fmtMoney.format(r.diffBase)}</td>
-      <td class="${r.diffHigh >= 0 ? "positive" : "negative"}">${fmtMoney.format(r.diffHigh)}</td>
+      <td>${formatMoney(r.rent)}</td>
+      <td>${formatMoney(r.buyLow)}</td>
+      <td>${formatMoney(r.buyBase)}</td>
+      <td>${formatMoney(r.buyHigh)}</td>
+      <td class="${r.diffLow >= 0 ? "positive" : "negative"}">${formatMoney(r.diffLow)}</td>
+      <td class="${r.diffBase >= 0 ? "positive" : "negative"}">${formatMoney(r.diffBase)}</td>
+      <td class="${r.diffHigh >= 0 ? "positive" : "negative"}">${formatMoney(r.diffHigh)}</td>
     `;
     tbody.appendChild(tr);
   }
@@ -524,7 +883,7 @@ function renderSensitivityTable(params, summaryMonth, scheduleMap) {
   tbody.innerHTML = "";
 
   const headerRow = document.createElement("tr");
-  headerRow.innerHTML = `<th>Wzrost mieszkania / WIBOR bazowy</th>${wiborDeltas.map((d) => `<th>${(params.wiborBasePct + d).toFixed(1)}%</th>`).join("")}`;
+  headerRow.innerHTML = `<th>${t("sensitivity.header")}</th>${wiborDeltas.map((d) => `<th>${(params.wiborBasePct + d).toFixed(1)}%</th>`).join("")}`;
   thead.appendChild(headerRow);
 
   for (const growthDelta of growthDeltas) {
@@ -532,7 +891,7 @@ function renderSensitivityTable(params, summaryMonth, scheduleMap) {
     const cells = [`<td>${(params.homeGrowthPct + growthDelta).toFixed(1)}%</td>`];
     for (const wiborDelta of wiborDeltas) {
       const value = evaluateBaseDifferenceAtMonth(params, summaryMonth, Math.max(0, params.wiborBasePct + wiborDelta), params.homeGrowthPct + growthDelta, scheduleMap);
-      cells.push(`<td class="${value >= 0 ? "positive" : "negative"}">${fmtMoney.format(value)}</td>`);
+      cells.push(`<td class="${value >= 0 ? "positive" : "negative"}">${formatMoney(value)}</td>`);
     }
     tr.innerHTML = cells.join("");
     tbody.appendChild(tr);
@@ -547,11 +906,11 @@ function renderAmortizationTable(baseRows, payoffMonth) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${r.month}</td>
-      <td>${fmtMoney.format(r.totalInstallment)}</td>
-      <td>${fmtMoney.format(r.interest)}</td>
-      <td>${fmtMoney.format(r.principal)}</td>
-      <td>${fmtMoney.format(r.overpay)}</td>
-      <td>${fmtMoney.format(r.endBalance)}</td>
+      <td>${formatMoney(r.totalInstallment)}</td>
+      <td>${formatMoney(r.interest)}</td>
+      <td>${formatMoney(r.principal)}</td>
+      <td>${formatMoney(r.overpay)}</td>
+      <td>${formatMoney(r.endBalance)}</td>
     `;
     tbody.appendChild(tr);
   }
@@ -568,7 +927,7 @@ function renderChart(containerId, title, buySeries, rentSeries, payoffMonth, vie
   const points = fullPoints.filter((p) => p.x <= horizon);
 
   if (!points.length) {
-    container.textContent = "Brak danych.";
+    container.textContent = t("chart.nodata");
     return;
   }
 
@@ -598,7 +957,7 @@ function renderChart(containerId, title, buySeries, rentSeries, payoffMonth, vie
     const val = (minY - yPad) + ((maxY - minY + 2 * yPad) * i) / 6;
     const y = yScale(val);
     add("line", { x1: pad.left, y1: y, x2: W - pad.right, y2: y, stroke: "#e2e8f0", "stroke-width": 1 });
-    add("text", { x: pad.left - 8, y: y + 4, "text-anchor": "end", "font-size": 11, fill: "#475569" }).textContent = fmtMoney.format(val);
+    add("text", { x: pad.left - 8, y: y + 4, "text-anchor": "end", "font-size": 11, fill: "#475569" }).textContent = formatMoney(val);
   }
 
   const xStep = horizon <= 60 ? 6 : horizon <= 120 ? 12 : 24;
@@ -627,14 +986,14 @@ function renderChart(containerId, title, buySeries, rentSeries, payoffMonth, vie
   const legend = document.createElement("div");
   legend.className = "chart-legend-out";
   const crossText = crossMonth === null
-    ? "Przeciecie: brak"
-    : `Przeciecie: ${crossMonth} m (Kupno > Wynajem)`;
+    ? t("chart.cross.none")
+    : t("chart.cross", { month: crossMonth });
   legend.innerHTML = `
-    <div class="legend-row"><span class="legend-line buy"></span><span>Kupno (${title})</span></div>
-    <div class="legend-row"><span class="legend-line rent"></span><span>Wynajem</span></div>
+    <div class="legend-row"><span class="legend-line buy"></span><span>${t("chart.legend.buy", { title })}</span></div>
+    <div class="legend-row"><span class="legend-line rent"></span><span>${t("chart.legend.rent")}</span></div>
     <div class="legend-row"><span class="legend-line cross"></span><span>${crossText}</span></div>
-    <div class="legend-note">Os X: miesiac sprzedazy (numery pod wykresem).</div>
-    <div class="legend-note">Os Y: majatek netto [PLN] (numery po lewej).</div>
+    <div class="legend-note">${t("chart.legend.x")}</div>
+    <div class="legend-note">${t("chart.legend.y")}</div>
   `;
   container.appendChild(legend);
 }
@@ -644,7 +1003,7 @@ function initBindings() {
     try {
       calculateAll();
     } catch (err) {
-      byId("status").textContent = `Blad: ${err.message}`;
+      byId("status").textContent = t("status.error", { message: err.message });
     }
   };
 
@@ -672,10 +1031,21 @@ function initBindings() {
     recalc();
   });
 
+  byId("langSwitch").addEventListener("click", () => {
+    setLanguage(currentLang === "pl" ? "en" : "pl");
+  });
+
+  setLanguage(getInitialLanguage());
+  appReady = true;
   recalc();
 }
 
 initBindings();
+
+
+
+
+
 
 
 

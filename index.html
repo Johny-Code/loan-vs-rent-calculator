@@ -1,18 +1,194 @@
 ﻿<!doctype html>
-<html lang="en">
+<html lang="pl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mortgage vs Rent</title>
+  <title data-i18n="meta.title">Kredyt vs Wynajem</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <script>
-    (function () {
-      var saved = localStorage.getItem("appLang");
-      var browser = (navigator.language || "en").toLowerCase();
-      var lang = saved || (browser.startsWith("pl") ? "pl" : "en");
-      window.location.replace(lang === "pl" ? "app.pl.html" : "app.en.html");
-    })();
-  </script>
+  <main class="app">
+    <header class="hero">
+      <h1 data-i18n="hero.title">Kredyt vs Wynajem</h1>
+      <p data-i18n="hero.subtitle">Porownanie majatku netto po sprzedazy mieszkania dla scenariuszy WIBOR.</p>
+      <button id="langSwitch" class="lang-switch" type="button" aria-label="Switch language">
+        <span aria-hidden="true">🌐</span>
+        <span id="langSwitchText">EN</span>
+      </button>
+    </header>
+
+    <section class="panel grid-two">
+      <div>
+        <h2 data-i18n="section.params">Parametry</h2>
+        <p class="explain" data-i18n="params.explain1">Parametry wejsciowe steruja obiema sciezkami. <code>Kwota kredytu = Wartosc * LTV</code>, <code>Wklad = Wartosc - Kredyt</code>, a <code>Kapital startowy najemcy = Wklad wlasny</code>, czyli srodki uzyte na zakup w scenariuszu najmu zostaja na starcie w portfelu inwestycyjnym.</p>
+        <p class="explain" data-i18n="params.explain2">Scenariusz kredytu: co miesiac liczona jest rata annuitetowa, do ktorej moga dojsc miesieczne nadwyzki finansowe i dodatkowe nadplaty z harmonogramu. Scenariusz najmu: najemca placi czynsz i koszty najmu, a inwestuje kapital startowy, miesieczne nadwyzki oraz dodatnia roznice miedzy kosztem kredytu bazowego a kosztem najmu.</p>
+        <p class="explain" data-i18n="params.explain3">Koszty wlasciciela to miesieczne koszty utrzymania po stronie kupujacego. Dodatkowe koszty najmu dzialaja analogicznie po stronie najemcy. Stopa inwestycji oraz podatek od zyskow dotycza obu portfeli inwestycyjnych.</p>
+        <div class="form-grid">
+          <label><span data-i18n="form.propertyValue">Wartosc nieruchomosci (PLN)</span><input id="propertyValue" type="number" value="850000" /></label>
+          <label><span data-i18n="form.ltv">LTV (%)</span><input id="ltv" type="number" value="80" min="0" max="100" step="0.1" /></label>
+          <label><span data-i18n="form.loanAmount">Kwota kredytu (PLN)</span><input id="loanAmount" type="number" value="749700" readonly /></label>
+          <label><span data-i18n="form.downPayment">Wklad wlasny (PLN)</span><input id="downPayment" type="number" value="100300" readonly /></label>
+
+          <label><span data-i18n="form.termMonths">Okres splaty (miesiace)</span><input id="termMonths" type="number" value="360" min="1" max="360" /></label>
+          <label class="readonly"><span data-i18n="form.termYears">Lata (pelne)</span><input id="termYearsInfo" type="text" value="30 lat" readonly /></label>
+
+          <label><span data-i18n="form.margin">Marza (%)</span><input id="margin" type="number" value="2.15" step="0.01" /></label>
+          <label><span data-i18n="form.wiborLow">WIBOR niski (%)</span><input id="wiborLow" type="number" value="3.5" step="0.01" /></label>
+          <label><span data-i18n="form.wiborBase">WIBOR bazowy (aktualny 6M) (%)</span><input id="wiborBase" type="number" value="4.2" step="0.01" /></label>
+          <label><span data-i18n="form.wiborHigh">WIBOR wysoki (%)</span><input id="wiborHigh" type="number" value="4.7" step="0.01" /></label>
+
+          <label><span data-i18n="form.monthlySurplus">Nadwyzki finansowe (PLN/mc)</span><input id="monthlySurplus" type="number" value="2578" min="0" /></label>
+
+          <label class="full"><span data-i18n="form.overpaySchedule">Harmonogram dodatkowych nadplat (format: <code>miesiac:kwota</code>, np. <code>1:500, 24:2000</code>)</span>
+            <textarea id="overpaySchedule" rows="2"></textarea>
+          </label>
+
+          <label><span data-i18n="form.homeGrowth">Roczna zmiana wartosci mieszkania (%)</span><input id="homeGrowth" type="number" value="3" step="0.01" /></label>
+          <label><span data-i18n="form.entryCost">Koszt wejscia w zakup (%)</span><input id="entryCost" type="number" value="2" step="0.01" /></label>
+          <label><span data-i18n="form.saleCost">Koszt sprzedazy (%)</span><input id="saleCost" type="number" value="1" step="0.01" /></label>
+          <label><span data-i18n="form.ownerMonthlyCosts">Koszty wlasciciela (PLN/mc)</span><input id="ownerMonthlyCosts" type="number" value="0" min="0" /></label>
+          <label><span data-i18n="form.renterMonthlyExtras">Dodatkowe koszty najmu (PLN/mc)</span><input id="renterMonthlyExtras" type="number" value="0" min="0" /></label>
+          <label><span data-i18n="form.investmentTaxRate">Podatek od zyskow inwestycji (%)</span><input id="investmentTaxRate" type="number" value="19" min="0" max="100" step="0.01" /></label>
+
+          <label><span data-i18n="form.rentStart">Najem startowy (PLN/mc)</span><input id="rentStart" type="number" value="4000" /></label>
+          <label><span data-i18n="form.rentMode">Model najmu</span>
+            <select id="rentMode">
+              <option value="fixed" data-i18n="form.rentModeFixed">Staly</option>
+              <option value="step" selected data-i18n="form.rentModeStep">Skokowy</option>
+            </select>
+          </label>
+          <label><span data-i18n="form.rentStep">Skok najmu (PLN)</span><input id="rentStep" type="number" value="250" min="0" /></label>
+          <label><span data-i18n="form.rentStepInterval">Skok najmu co ile miesiecy</span><input id="rentStepInterval" type="number" value="12" min="1" /></label>
+
+          <label><span data-i18n="form.investMode">Inwestowanie roznicy</span>
+            <select id="investMode">
+              <option value="on" selected>ON</option>
+              <option value="off">OFF</option>
+            </select>
+          </label>
+          <label><span data-i18n="form.investRate">Stopa inwestycji (%)</span><input id="investRate" type="number" value="4.65" step="0.01" /></label>
+          <label class="readonly"><span data-i18n="form.startingCapital">Kapital startowy najemcy (PLN)</span><input id="startingCapital" type="number" value="100300" readonly /></label>
+
+          <label class="full"><span data-i18n="form.saleMonths">Miesiace sprzedazy (CSV, np. <code>24,36,48</code>)</span>
+            <input id="saleMonths" type="text" value="24,36,48" />
+          </label>
+        </div>
+        <div class="actions">
+          <button id="recalcBtn" data-i18n="button.recalc">Przelicz</button>
+          <span id="status"></span>
+        </div>
+      </div>
+
+      <div>
+        <h2 data-i18n="section.summary">Podsumowanie</h2>
+        <p class="explain" data-i18n="summary.explain1">Obie sciezki liczymy jako majatek netto. Kupno = wartosc sprzedazy mieszkania netto + inwestycje po stronie kupujacego - saldo kredytu - koszt wejscia. Wynajem = portfel inwestycyjny najemcy, bez nieruchomosci.</p>
+        <p class="explain" data-i18n="summary.explain2">Scenariusz wynajmu: najemca placi co miesiac czynsz i ewentualne dodatkowe koszty najmu, a rownolegle inwestuje kapital startowy rowny wkladowi wlasnemu. Do portfela trafiaja tez <code>Nadwyzki finansowe</code> oraz dodatnia roznica miedzy kosztem mieszkania przy kredycie bazowym a kosztem najmu.</p>
+        <p class="explain" data-i18n="summary.explain3">Jesli kredyt bazowy zostaje splacony, konczy sie horyzont porownania dla podsumowania, harmonogramu i toru inwestowania w tym modelu. To pozwala porownywac oba scenariusze na tym samym zamknietym horyzoncie.</p>
+        <div class="summary-controls">
+          <label><span data-i18n="summary.previewMonth">Miesiac podgladu:</span> <span id="summaryMonthLabel">48</span>
+            <input id="summaryMonth" type="range" min="1" max="360" value="48" step="1" />
+          </label>
+        </div>
+        <div id="summary" class="summary"></div>
+
+        <h3 data-i18n="diagnostics.title">Jak powstal wynik</h3>
+        <p class="explain" data-i18n="diagnostics.explain">Tabela rozklada wynik bazowy na skladniki. Dzięki temu widac, czy przewaga kupna albo wynajmu wynika z equity mieszkania, kosztow wejscia, wysokosci salda kredytu czy z portfela inwestycyjnego.</p>
+        <div class="table-wrap diagnostics-wrap">
+          <table id="diagnosticsTable">
+            <thead>
+              <tr>
+                <th data-i18n="diagnostics.col.item">Element</th>
+                <th data-i18n="diagnostics.col.value">Wartosc</th>
+                <th data-i18n="diagnostics.col.how">Jak liczona</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 data-i18n="section.results">Wyniki porownania</h2>
+      <p class="explain" data-i18n="results.explain">Tabela pokazuje majatek netto dla wynajmu oraz kupna w scenariuszach niski/bazowy/wysoki. Kolumny roznic to <code>kupno - wynajem</code>, wiec dodatnia wartosc oznacza przewage zakupu.</p>
+      <div class="table-wrap">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th data-i18n="results.col.month">Miesiac sprzedazy</th>
+              <th data-i18n="results.col.rent">Wynajem (PLN)</th>
+              <th data-i18n="results.col.buyLow">Kupno niski WIBOR (PLN)</th>
+              <th data-i18n="results.col.buyBase">Kupno bazowy WIBOR (PLN)</th>
+              <th data-i18n="results.col.buyHigh">Kupno wysoki WIBOR (PLN)</th>
+              <th data-i18n="results.col.diffLow">Roznica niski (K-W)</th>
+              <th data-i18n="results.col.diffBase">Roznica bazowy (K-W)</th>
+              <th data-i18n="results.col.diffHigh">Roznica wysoki (K-W)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 data-i18n="section.sensitivity">Analiza wrazliwosci</h2>
+      <p class="explain" data-i18n="sensitivity.explain">Sprawdzamy wynik bazowy dla wybranego miesiaca przy zmianie wzrostu wartosci mieszkania oraz bazowego WIBOR. W komorce widzisz roznice: <code>kupno bazowe - wynajem</code>. To szybka analiza, jak wrazliwy jest wynik na zmiane rynku nieruchomosci i kosztu pieniadza.</p>
+      <div class="table-wrap">
+        <table id="sensitivityTable">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 data-i18n="section.charts">Wykresy</h2>
+      <p class="explain" data-i18n="charts.explain1">Na osi X sa miesiace, na osi Y majatek netto. Domyslnie widok 5 lat (60 miesiecy), mozna oddalic do pelnego okresu kredytu, ale kazdy wykres i tak konczy sie w miesiacu pelnej splaty danego scenariusza.</p>
+      <div class="zoom-bar">
+        <button id="zoomInBtn" type="button" data-i18n="charts.zoomIn">Przybliz</button>
+        <button id="zoomOutBtn" type="button" data-i18n="charts.zoomOut">Oddal</button>
+        <label><span data-i18n="charts.range">Zakres:</span> <span id="viewMonthsLabel">60</span> <span data-i18n="charts.monthShort">m-cy</span>
+          <input id="viewMonths" type="range" min="12" max="360" value="60" step="12" />
+        </label>
+      </div>
+      <p data-i18n="charts.explain2">Os X: miesiac sprzedazy, os Y: majatek netto [PLN]. Czerwona linia oznacza pierwszy miesiac, gdy kupno &gt; wynajem.</p>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3 data-i18n="charts.low">WIBOR niski</h3>
+          <div id="chartLow"></div>
+        </div>
+        <div class="chart-card">
+          <h3 data-i18n="charts.base">WIBOR bazowy</h3>
+          <div id="chartBase"></div>
+        </div>
+        <div class="chart-card">
+          <h3 data-i18n="charts.high">WIBOR wysoki</h3>
+          <div id="chartHigh"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 data-i18n="section.amortization">Harmonogram kredytu (WIBOR bazowy)</h2>
+      <p class="explain" data-i18n="amortization.explain">Rata = odsetki + kapital + nadplata. Tabela pokazuje wylacznie realny okres splaty kredytu bazowego. Po splacie nie ma juz kolejnych wierszy z zerowymi ratami.</p>
+      <div class="table-wrap">
+        <table id="amortizationTable">
+          <thead>
+            <tr>
+              <th data-i18n="amortization.col.month">Miesiac</th>
+              <th data-i18n="amortization.col.total">Rata calkowita (PLN)</th>
+              <th data-i18n="amortization.col.interest">Odsetki (PLN)</th>
+              <th data-i18n="amortization.col.principal">Kapital w racie (PLN)</th>
+              <th data-i18n="amortization.col.overpay">Nadplata (PLN)</th>
+              <th data-i18n="amortization.col.balance">Pozostalo do splaty (PLN)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>

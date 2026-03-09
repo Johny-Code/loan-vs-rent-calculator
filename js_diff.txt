@@ -1,0 +1,285 @@
+Comparing files app.js and APP.EN.JS
+***** app.js
+  310:    byId("startingCapital").value = String(Math.round(downPayment));
+  311:    byId("termYearsInfo").value = termMonths % 12 === 0 ? `${termMonths / 12} lat` : "";
+  312:  
+***** APP.EN.JS
+  310:    byId("startingCapital").value = String(Math.round(downPayment));
+  311:    byId("termYearsInfo").value = termMonths % 12 === 0 ? `${termMonths / 12} years` : "";
+  312:  
+*****
+
+***** app.js
+  369:    const status = byId("status");
+  370:    status.textContent = "Przeliczanie...";
+  371:  
+***** APP.EN.JS
+  369:    const status = byId("status");
+  370:    status.textContent = "Calculating...";
+  371:  
+*****
+
+***** app.js
+  422:    status.textContent = invalid.length > 0
+  423:      ? `Gotowe, ale pominieto bledne wpisy harmonogramu: ${invalid.join(" | ")}`
+  424:      : `Gotowe: ${new Date().toLocaleTimeString("pl-PL")}`;
+  425:  }
+***** APP.EN.JS
+  422:    status.textContent = invalid.length > 0
+  423:      ? `Done, but skipped invalid schedule entries: ${invalid.join(" | ")}`
+  424:      : `Done: ${new Date().toLocaleTimeString("en-US")}`;
+  425:  }
+*****
+
+***** app.js
+  440:    summary.innerHTML = "";
+  441:    summary.appendChild(kpi("Rata bazowa (WIBOR bazowy)", `${fmtMoney.format(model.mortgages.base.monthlyPayment)} PLN`, "PMT: ma
+  442:  rza + WIBOR bazowy, rata annuitetowa do miesiaca splaty."));
+  443:    summary.appendChild(kpi(`Majatek wynajmu (m-c ${summaryMonth})`, `${fmtMoney.format(rentAtMonth)} PLN`, "Portfel po podatku B
+  444:  elki, z kapitalem startowym i miesiecznymi doplatami."));
+  445:    summary.appendChild(kpi(`Majatek kupna (m-c ${summaryMonth})`, `${fmtMoney.format(buyBaseAtMonth)} PLN`, "Sprzedaz mieszkania
+  446:   netto + inwestycje po stronie kupna - saldo kredytu - koszt wejscia."));
+  447:    summary.appendChild(kpi(`Roznica bazowa (m-c ${summaryMonth})`, `${fmtMoney.format(diffBaseAtMonth)} PLN`, "Kupno bazowe minu
+  448:  s wynajem."));
+  449:    summary.appendChild(kpi("Przeciecie (bazowy)", crossBase ? `${crossBase} m-c` : "brak w horyzoncie", "Pierwszy miesiac, gdy k
+  450:  upno przebija wynajem."));
+  451:    summary.appendChild(kpi("Pelna splata kredytu", `${payoffMonth} m-c`, "Po tym miesiacu konczy sie harmonogram, wykres i dalsz
+  452:  e inwestowanie w tym porownaniu."));
+  453:    summary.appendChild(kpi("Portfel kupna przy splacie", `${fmtMoney.format(buyPortfolioAtPayoff)} PLN`, "Wartosc inwestycji po 
+  454:  stronie kupujacego na moment pelnej splaty."));
+  455:    summary.appendChild(kpi("Portfel wynajmu przy tej samej dacie", `${fmtMoney.format(rentPortfolioAtPayoff)} PLN`, "Wartosc por
+  456:  tfela najemcy na moment splaty kredytu w scenariuszu bazowym."));
+  457:    summary.appendChild(kpi(`Mieszkanie warte (m-c ${summaryMonth})`, `${fmtMoney.format(baseBuyRow ? baseBuyRow.homeValue : 0)} 
+  458:  PLN`, "Wartosc nieruchomosci po zmianie rocznej."));
+  459:    summary.appendChild(kpi(`Poszlo na kredyt (m-c ${summaryMonth})`, `${fmtMoney.format(mortgageBaseRow ? mortgageBaseRow.cumula
+  460:  tiveCashOut : 0)} PLN`, "Suma rat i nadplat do wybranego miesiaca."));
+  461:    summary.appendChild(kpi(`Koszty wlasciciela (m-c ${summaryMonth})`, `${fmtMoney.format(mortgageBaseRow ? mortgageBaseRow.cumu
+  462:  lativeOwnerCosts : 0)} PLN`, "Ubezpieczenie, drobne remonty, utrzymanie wlasciciela."));
+  463:    summary.appendChild(kpi(`Poszlo na wynajem (m-c ${summaryMonth})`, `${fmtMoney.format(rentRow ? rentRow.cumulativeRentCost : 
+  464:  0)} PLN`, "Najem plus dodatkowe koszty najmu do wybranego miesiaca."));
+  465:    summary.appendChild(kpi(`Nadplacono lacznie (m-c ${summaryMonth})`, `${fmtMoney.format(mortgageBaseRow ? mortgageBaseRow.cumu
+  466:  lativeOverpay : 0)} PLN`, "Miesieczne nadwyzki i harmonogram nadplat wykorzystane przez kredyt."));
+  467:  }
+***** APP.EN.JS
+  440:    summary.innerHTML = "";
+  441:    summary.appendChild(kpi("Base installment (base WIBOR)", `${fmtMoney.format(model.mortgages.base.monthlyPayment)} PLN`, "PMT:
+  442:   margin + base WIBOR, annuity payment until payoff month."));
+  443:    summary.appendChild(kpi(`Rent wealth (m-c ${summaryMonth})`, `${fmtMoney.format(rentAtMonth)} PLN`, "After-tax investment por
+  444:  tfolio with starting capital and monthly contributions."));
+  445:    summary.appendChild(kpi(`Buy wealth (m-c ${summaryMonth})`, `${fmtMoney.format(buyBaseAtMonth)} PLN`, "Net sale proceeds + bu
+  446:  y-side investments - remaining mortgage balance - entry cost."));
+  447:    summary.appendChild(kpi(`Base difference (m-c ${summaryMonth})`, `${fmtMoney.format(diffBaseAtMonth)} PLN`, "Base buy result 
+  448:  minus rent result."));
+  449:    summary.appendChild(kpi("Crossing (base)", crossBase ? `${crossBase} m-c` : "none in horizon", "First month when buying outpe
+  450:  rforms renting."));
+  451:    summary.appendChild(kpi("Full mortgage payoff", `${payoffMonth} m-c`, "After this month, schedule, chart horizon and further 
+  452:  investing are frozen in this comparison."));
+  453:    summary.appendChild(kpi("Buy portfolio at payoff", `${fmtMoney.format(buyPortfolioAtPayoff)} PLN`, "Investment value on the b
+  454:  uy side at full payoff."));
+  455:    summary.appendChild(kpi("Rent portfolio at the same date", `${fmtMoney.format(rentPortfolioAtPayoff)} PLN`, "Renter portfolio
+  456:   value at base mortgage payoff date."));
+  457:    summary.appendChild(kpi(`Property value (m-c ${summaryMonth})`, `${fmtMoney.format(baseBuyRow ? baseBuyRow.homeValue : 0)} PL
+  458:  N`, "Property value after annual growth."));
+  459:    summary.appendChild(kpi(`Total mortgage outflow (m-c ${summaryMonth})`, `${fmtMoney.format(mortgageBaseRow ? mortgageBaseRow.
+  460:  cumulativeCashOut : 0)} PLN`, "Total installments and overpayments up to selected month."));
+  461:    summary.appendChild(kpi(`Owner costs (m-c ${summaryMonth})`, `${fmtMoney.format(mortgageBaseRow ? mortgageBaseRow.cumulativeO
+  462:  wnerCosts : 0)} PLN`, "Insurance, minor repairs, owner maintenance."));
+  463:    summary.appendChild(kpi(`Total rent outflow (m-c ${summaryMonth})`, `${fmtMoney.format(rentRow ? rentRow.cumulativeRentCost :
+  464:   0)} PLN`, "Rent plus additional rent costs up to selected month."));
+  465:    summary.appendChild(kpi(`Total overpaid (m-c ${summaryMonth})`, `${fmtMoney.format(mortgageBaseRow ? mortgageBaseRow.cumulati
+  466:  veOverpay : 0)} PLN`, "Monthly surplus and schedule-based overpayments used by mortgage."));
+  467:  }
+*****
+
+***** app.js
+  478:    const rows = [
+  479:      ["Wartosc mieszkania brutto", buyRow.homeValue, "Wartosc nieruchomosci po rocznej zmianie ceny."],
+  480:      ["Saldo kredytu", mortgageRow.endBalance, "Kapital pozostaly do splaty w scenariuszu bazowym."],
+  481:      ["Equity przed sprzedaza", buyRow.equityBeforeSale, "Wartosc mieszkania minus pozostale saldo kredytu."],
+  482:      ["Koszt sprzedazy", buyRow.saleCostAmount, "Procent od aktualnej wartosci mieszkania."],
+  483:      ["Koszt wejscia", buyRow.entryCostAmount, "Jednorazowy koszt zakupu liczony od wartosci startowej."],
+  484:      ["Portfel kupujacego", buyRow.investmentAfterTax, "Srodki inwestowane po stronie kupna: niewykorzystane nadplaty i dodatnia
+  485:   przewaga najmu nad kosztem kredytu."],
+  486:      ["Portfel najemcy", rentRow.investmentAfterTax, "Kapital startowy = wklad wlasny, plus nadwyzki finansowe i dodatnia roznic
+  487:  a kosztu kredytu nad najmem."],
+  488:      ["Doplaty inwestycyjne najemcy", rentRow.cumulativeContribution, "Suma miesiecznych doplat do portfela najemcy, bez kapital
+  489:  u startowego."],
+  490:      ["Doplaty inwestycyjne kupujacego", buyRow.cumulativeContribution, "Suma miesiecznych doplat do portfela kupujacego."],
+  491:      ["Wydatki kredytowe", mortgageRow.cumulativeCashOut, "Suma rat i nadplat do wybranego miesiaca."],
+  492:      ["Koszty wlasciciela", mortgageRow.cumulativeOwnerCosts, "Koszty utrzymania wlasciciela doliczane co miesiac."],
+  493:      ["Wydatki najmu", rentRow.cumulativeRentCost, "Suma najmu i dodatkowych kosztow najmu do wybranego miesiaca."],
+  494:      ["Majatek netto kupna", buyRow.wealth, "Sprzedaz mieszkania netto + portfel kupna - saldo kredytu - koszt wejscia."],
+  495:      ["Majatek netto wynajmu", rentRow.wealth, "Portfel najemcy po podatku, przy tych samych zalozeniach inwestycyjnych."],
+  496:      ["Roznica kupno - wynajem", buyRow.wealth - rentRow.wealth, "Dodatnia wartosc oznacza przewage zakupu w wybranym miesiacu."
+  497:  ],
+  498:    ];
+***** APP.EN.JS
+  478:    const rows = [
+  479:      ["Value mieszkania brutto", buyRow.homeValue, "Value nieruchomosci po rocznej zmianie ceny."],
+  480:      ["Mortgage balance", mortgageRow.endBalance, "Remaining principal balance in base scenario."],
+  481:      ["Equity before sale", buyRow.equityBeforeSale, "Value mieszkania minus pozostale saldo kredytu."],
+  482:      ["Sale cost", buyRow.saleCostAmount, "Percent of current property value."],
+  483:      ["Entry cost", buyRow.entryCostAmount, "One-time purchase cost calculated from starting property value."],
+  484:      ["Buyer portfolio", buyRow.investmentAfterTax, "Buy-side invested funds: unused overpayments and positive advantage of rent
+  485:   cost over mortgage cost."],
+  486:      ["Renter portfolio", rentRow.investmentAfterTax, "Starting capital = down payment, plus monthly surplus and positive differ
+  487:  ence of mortgage housing cost over rent."],
+  488:      ["Renter investment contributions", rentRow.cumulativeContribution, "Suma miesiecznych doplat do portfela najemcy, bez kapi
+  489:  talu startowego."],
+  490:      ["Buyer investment contributions", buyRow.cumulativeContribution, "Suma miesiecznych doplat do portfela kupujacego."],
+  491:      ["Mortgage cash outflow", mortgageRow.cumulativeCashOut, "Total installments and overpayments up to selected month."],
+  492:      ["Owner costs", mortgageRow.cumulativeOwnerCosts, "Owner maintenance costs added monthly."],
+  493:      ["Rent cash outflow", rentRow.cumulativeRentCost, "Total rent and additional rent costs up to selected month."],
+  494:      ["Buy net wealth", buyRow.wealth, "Net property sale value + buyer portfolio - mortgage balance - entry cost."],
+  495:      ["Rent net wealth", rentRow.wealth, "Renter portfolio po podatku, przy tych samych zalozeniach inwestycyjnych."],
+  496:      ["Difference buy - rent", buyRow.wealth - rentRow.wealth, "Positive value means buying is better in selected month."],
+  497:    ];
+*****
+
+***** app.js
+  500:    for (const [label, value, note] of rows) {
+  501:      const tr = document.createElement("tr");
+  502:      tr.innerHTML = `<td>${label}</td><td>${fmtMoney.format(value)} PLN</td><td>${note}</td>`;
+***** APP.EN.JS
+  499:    for (const [label, value, note] of rows) {
+  500:      const tr = document.createItem("tr");
+  501:      tr.innerHTML = `<td>${label}</td><td>${fmtMoney.format(value)} PLN</td><td>${note}</td>`;
+*****
+
+***** app.js
+  507:  function kpi(title, value, note) {
+  508:    const box = document.createElement("div");
+  509:    box.className = "kpi";
+***** APP.EN.JS
+  506:  function kpi(title, value, note) {
+  507:    const box = document.createItem("div");
+  508:    box.className = "kpi";
+*****
+
+***** app.js
+  517:    for (const r of rows) {
+  518:      const tr = document.createElement("tr");
+  519:      tr.innerHTML = `
+***** APP.EN.JS
+  516:    for (const r of rows) {
+  517:      const tr = document.createItem("tr");
+  518:      tr.innerHTML = `
+*****
+
+***** app.js
+  542:  
+  543:    const headerRow = document.createElement("tr");
+  544:    headerRow.innerHTML = `<th>Wzrost mieszkania / WIBOR bazowy</th>${wiborDeltas.map((d) => `<th>${(params.wiborBasePct + d).toF
+  545:  ixed(1)}%</th>`).join("")}`;
+  546:    thead.appendChild(headerRow);
+***** APP.EN.JS
+  541:  
+  542:    const headerRow = document.createItem("tr");
+  543:    headerRow.innerHTML = `<th>Home growth / base WIBOR</th>${wiborDeltas.map((d) => `<th>${(params.wiborBasePct + d).toFixed(1)}
+  544:  %</th>`).join("")}`;
+  545:    thead.appendChild(headerRow);
+*****
+
+***** app.js
+  548:    for (const growthDelta of growthDeltas) {
+  549:      const tr = document.createElement("tr");
+  550:      const cells = [`<td>${(params.homeGrowthPct + growthDelta).toFixed(1)}%</td>`];
+***** APP.EN.JS
+  547:    for (const growthDelta of growthDeltas) {
+  548:      const tr = document.createItem("tr");
+  549:      const cells = [`<td>${(params.homeGrowthPct + growthDelta).toFixed(1)}%</td>`];
+*****
+
+***** app.js
+  565:      if (r.month > payoffMonth) break;
+  566:      const tr = document.createElement("tr");
+  567:      tr.innerHTML = `
+***** APP.EN.JS
+  564:      if (r.month > payoffMonth) break;
+  565:      const tr = document.createItem("tr");
+  566:      tr.innerHTML = `
+*****
+
+***** app.js
+  589:    if (!points.length) {
+  590:      container.textContent = "Brak danych.";
+  591:      return;
+***** APP.EN.JS
+  588:    if (!points.length) {
+  589:      container.textContent = "No data.";
+  590:      return;
+*****
+
+***** app.js
+  603:  
+  604:    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  605:    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+***** APP.EN.JS
+  602:  
+  603:    const svg = document.createItemNS("http://www.w3.org/2000/svg", "svg");
+  604:    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+*****
+
+***** app.js
+  606:    const add = (tag, attrs = {}, parent = svg) => {
+  607:      const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  608:      Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, String(v)));
+***** APP.EN.JS
+  605:    const add = (tag, attrs = {}, parent = svg) => {
+  606:      const el = document.createItemNS("http://www.w3.org/2000/svg", tag);
+  607:      Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, String(v)));
+*****
+
+***** app.js
+  650:  
+  651:    const legend = document.createElement("div");
+  652:    legend.className = "chart-legend-out";
+***** APP.EN.JS
+  649:  
+  650:    const legend = document.createItem("div");
+  651:    legend.className = "chart-legend-out";
+*****
+
+***** app.js
+  653:    const crossText = crossMonth === null
+  654:      ? "Przeciecie: brak"
+  655:      : `Przeciecie: ${crossMonth} m (Kupno > Wynajem)`;
+  656:    legend.innerHTML = `
+  657:      <div class="legend-row"><span class="legend-line buy"></span><span>Kupno (${title})</span></div>
+  658:      <div class="legend-row"><span class="legend-line rent"></span><span>Wynajem</span></div>
+  659:      <div class="legend-row"><span class="legend-line cross"></span><span>${crossText}</span></div>
+  660:      <div class="legend-note">Os X: miesiac sprzedazy (numery pod wykresem).</div>
+  661:      <div class="legend-note">Os Y: majatek netto [PLN] (numery po lewej).</div>
+  662:    `;
+***** APP.EN.JS
+  652:    const crossText = crossMonth === null
+  653:      ? "Crossing: none"
+  654:      : `Crossing: ${crossMonth} m (Buy > Rent)`;
+  655:    legend.innerHTML = `
+  656:      <div class="legend-row"><span class="legend-line buy"></span><span>Buy (${title})</span></div>
+  657:      <div class="legend-row"><span class="legend-line rent"></span><span>Rent</span></div>
+  658:      <div class="legend-row"><span class="legend-line cross"></span><span>${crossText}</span></div>
+  659:      <div class="legend-note">X axis: sale month (numbers below chart).</div>
+  660:      <div class="legend-note">Y axis: net wealth [PLN] (numbers on the left).</div>
+  661:    `;
+*****
+
+***** app.js
+  670:      } catch (err) {
+  671:        byId("status").textContent = `Blad: ${err.message}`;
+  672:      }
+***** APP.EN.JS
+  669:      } catch (err) {
+  670:        byId("status").textContent = `Error: ${err.message}`;
+  671:      }
+*****
+
+***** app.js
+***** APP.EN.JS
+  713:  
+  714:  
+  715:  
+  716:  
+  717:  
+*****
+
