@@ -1,0 +1,13 @@
+﻿# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Local artifacts
+*.xlsx
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
