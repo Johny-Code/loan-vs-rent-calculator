@@ -263,3 +263,25 @@ svg {
 .legend-note {
   color: #334155;
 }
+.hero {
+  position: relative;
+}
+
+.lang-switch {
+  position: absolute;
+  right: 0;
+  top: 0;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  color: #1f2937;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lang-switch:hover {
+  background: #f8fafc;
+}

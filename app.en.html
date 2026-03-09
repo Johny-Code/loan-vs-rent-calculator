@@ -1,0 +1,203 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mortgage vs Rent</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <h1>Mortgage vs Rent</h1>
+      <p>Compare net wealth after selling a property across WIBOR scenarios.</p>
+      <button class="lang-switch" type="button" onclick="localStorage.setItem('appLang','pl'); location.href='app.pl.html';" aria-label="Switch language">
+      <span aria-hidden="true">🌐</span> PL
+    </button>
+    </header>
+
+    <section class="panel grid-two">
+      <div>
+        <h2>Parameters</h2>
+        <p class="explain">Input parameters drive both paths. <code>Loan amount = Property value * LTV</code>, <code>Down payment = Property value - Loan</code>, and <code>Renter starting capital = Down payment</code>, so funds used for purchase stay invested in the rent scenario.</p>
+        <p class="explain">Mortgage scenario: an annuity installment is calculated every month, with monthly surplus and extra schedule payments added on top. Rent scenario: the renter pays rent and rent-related costs, while investing starting capital, monthly surplus, and the positive difference between base mortgage cost and rent cost.</p>
+        <p class="explain">Owner costs are monthly maintenance costs on the buying side. Additional rent costs work analogously on the renter side. Investment rate and capital gains tax apply to both investment portfolios.</p>
+        <div class="form-grid">
+          <label>Property value (PLN)<input id="propertyValue" type="number" value="850000" /></label>
+          <label>LTV (%)<input id="ltv" type="number" value="80" min="0" max="100" step="0.1" /></label>
+          <label>Loan amount (PLN)<input id="loanAmount" type="number" value="749700" readonly /></label>
+          <label>Down payment (PLN)<input id="downPayment" type="number" value="100300" readonly /></label>
+
+          <label>Repayment period (months)<input id="termMonths" type="number" value="360" min="1" max="360" /></label>
+          <label class="readonly">Years (full)<input id="termYearsInfo" type="text" value="30 years" readonly /></label>
+
+          <label>Bank margin (%)<input id="margin" type="number" value="2.15" step="0.01" /></label>
+          <label>WIBOR low (%)<input id="wiborLow" type="number" value="3.5" step="0.01" /></label>
+          <label>WIBOR base (current 6M) (%)<input id="wiborBase" type="number" value="4.2" step="0.01" /></label>
+          <label>WIBOR high (%)<input id="wiborHigh" type="number" value="4.7" step="0.01" /></label>
+
+          <label>Monthly surplus (PLN/month)<input id="monthlySurplus" type="number" value="2578" min="0" /></label>
+
+          <label class="full">Extra prepayment schedule (format: <code>month:amount</code>, e.g. <code>1:500, 24:2000</code>)
+            <textarea id="overpaySchedule" rows="2"></textarea>
+          </label>
+
+          <label>Annual property value change (%)<input id="homeGrowth" type="number" value="3" step="0.01" /></label>
+          <label>Purchase entry cost (%)<input id="entryCost" type="number" value="2" step="0.01" /></label>
+          <label>Sale cost (%)<input id="saleCost" type="number" value="1" step="0.01" /></label>
+          <label>Owner monthly costs (PLN/month)<input id="ownerMonthlyCosts" type="number" value="0" min="0" /></label>
+          <label>Additional rent costs (PLN/month)<input id="renterMonthlyExtras" type="number" value="0" min="0" /></label>
+          <label>Investment gains tax (%)<input id="investmentTaxRate" type="number" value="19" min="0" max="100" step="0.01" /></label>
+
+          <label>Starting rent (PLN/month)<input id="rentStart" type="number" value="4000" /></label>
+          <label>Rent model
+            <select id="rentMode">
+              <option value="fixed">Fixed</option>
+              <option value="step" selected>Stepwise</option>
+            </select>
+          </label>
+          <label>Rent increase step (PLN)<input id="rentStep" type="number" value="250" min="0" /></label>
+          <label>Rent step every N months<input id="rentStepInterval" type="number" value="12" min="1" /></label>
+
+          <label>Invest the difference
+            <select id="investMode">
+              <option value="on" selected>ON</option>
+              <option value="off">OFF</option>
+            </select>
+          </label>
+          <label>Investment rate (%)<input id="investRate" type="number" value="4.65" step="0.01" /></label>
+          <label class="readonly">Renter starting capital (PLN)<input id="startingCapital" type="number" value="100300" readonly /></label>
+
+          <label class="full">Sale months (CSV, e.g. <code>24,36,48</code>)
+            <input id="saleMonths" type="text" value="24,36,48" />
+          </label>
+        </div>
+        <div class="actions">
+          <button id="recalcBtn">Recalculate</button>
+          <span id="status"></span>
+        </div>
+      </div>
+
+      <div>
+        <h2>Summary</h2>
+        <p class="explain">Both paths are measured as net wealth. Buying = net sale value + buyer investments - mortgage balance - entry cost. Renting = renter investment portfolio, without property ownership.</p>
+        <p class="explain">Rent scenario: renter pays monthly rent and optional additional rent costs, while investing starting capital equal to down payment. Portfolio contributions also include <code>Monthly surplus</code> and the positive difference between base mortgage housing cost and rent cost.</p>
+        <p class="explain">When base mortgage is paid off, comparison horizon ends for summary, amortization and investment tracks in this model. This keeps both scenarios comparable on the same closed horizon.</p>
+        <div class="summary-controls">
+          <label>Preview month: <span id="summaryMonthLabel">48</span>
+            <input id="summaryMonth" type="range" min="1" max="360" value="48" step="1" />
+          </label>
+        </div>
+        <div id="summary" class="summary"></div>
+
+        <h3>How the result is built</h3>
+        <p class="explain">This table breaks the base result into components. It shows whether buy vs rent advantage comes from home equity, entry/sale costs, mortgage balance, or investment portfolio.</p>
+        <div class="table-wrap diagnostics-wrap">
+          <table id="diagnosticsTable">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Value</th>
+                <th>How calculated</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Comparison results</h2>
+      <p class="explain">This table shows net wealth for rent and buy under low/base/high WIBOR scenarios. Difference columns are <code>buy - rent</code>, so positive values mean buying is better.</p>
+      <div class="table-wrap">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th>Sale month</th>
+              <th>Rent (PLN)</th>
+              <th>Buy low WIBOR (PLN)</th>
+              <th>Buy base WIBOR (PLN)</th>
+              <th>Buy high WIBOR (PLN)</th>
+              <th>Diff low (B-R)</th>
+              <th>Diff base (B-R)</th>
+              <th>Diff high (B-R)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Sensitivity analysis</h2>
+      <p class="explain">Base result for selected month is stress-tested against home growth and base WIBOR changes. Each cell shows <code>base buy - rent</code>. This is a quick sensitivity check for real-estate trend and cost of money.</p>
+      <div class="table-wrap">
+        <table id="sensitivityTable">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Charts</h2>
+      <p class="explain">X axis shows months and Y axis shows net wealth. Default view is 5 years (60 months); you can zoom out to full mortgage period, but each chart still ends at payoff month for its scenario.</p>
+      <div class="zoom-bar">
+        <button id="zoomInBtn" type="button">Zoom in</button>
+        <button id="zoomOutBtn" type="button">Zoom out</button>
+        <label>Range: <span id="viewMonthsLabel">60</span> m-cy
+          <input id="viewMonths" type="range" min="12" max="360" value="60" step="12" />
+        </label>
+      </div>
+      <p>X axis: sale month, Y axis: net wealth [PLN]. Red line marks first month where buying beats renting.</p>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3>WIBOR low</h3>
+          <div id="chartLow"></div>
+        </div>
+        <div class="chart-card">
+          <h3>WIBOR base</h3>
+          <div id="chartBase"></div>
+        </div>
+        <div class="chart-card">
+          <h3>WIBOR high</h3>
+          <div id="chartHigh"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Mortgage amortization (base WIBOR)</h2>
+      <p class="explain">Installment = interest + principal + overpayment. Table shows only the actual payoff period for base mortgage. After payoff there are no extra zero-installment rows.</p>
+      <div class="table-wrap">
+        <table id="amortizationTable">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Total installment (PLN)</th>
+              <th>Interest (PLN)</th>
+              <th>Principal in installment (PLN)</th>
+              <th>Overpayment (PLN)</th>
+              <th>Remaining balance (PLN)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.en.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
