@@ -11,6 +11,11 @@ const TRANSLATIONS = {
     "section.sensitivity": "Analiza wrazliwosci",
     "section.charts": "Wykresy",
     "section.amortization": "Harmonogram kredytu (WIBOR bazowy)",
+    "group.property": "Nieruchomosc",
+    "group.rates": "Stopa i WIBOR",
+    "group.overpay": "Nadplaty",
+    "group.buyCosts": "Zakup i utrzymanie",
+    "group.rentInvest": "Najem i inwestycje",
     "params.explain1": "Parametry wejsciowe steruja obiema sciezkami. <code>Kwota kredytu = Wartosc * LTV</code>, <code>Wklad = Wartosc - Kredyt</code>, a <code>Kapital startowy najemcy = Wklad wlasny</code>, czyli srodki uzyte na zakup w scenariuszu najmu zostaja na starcie w portfelu inwestycyjnym.",
     "params.explain2": "Scenariusz kredytu: co miesiac liczona jest rata annuitetowa, do ktorej moga dojsc miesieczne nadwyzki finansowe i dodatkowe nadplaty z harmonogramu. Scenariusz najmu: najemca placi czynsz i koszty najmu, a inwestuje kapital startowy, miesieczne nadwyzki oraz dodatnia roznice miedzy kosztem kredytu bazowego a kosztem najmu.",
     "params.explain3": "Koszty wlasciciela to miesieczne koszty utrzymania po stronie kupujacego. Dodatkowe koszty najmu dzialaja analogicznie po stronie najemcy. Stopa inwestycji oraz podatek od zyskow dotycza obu portfeli inwestycyjnych.",
@@ -21,6 +26,17 @@ const TRANSLATIONS = {
     "form.termMonths": "Okres splaty (miesiace)",
     "form.termYears": "Lata (pelne)",
     "form.margin": "Marza (%)",
+    "form.referenceIndex": "Indeks referencyjny",
+    "form.wiborSpread": "Odchylenie scenariusza low/high (pp)",
+    "form.wibor6m": "WIBOR 6M start (%)",
+    "form.wibor12m": "WIBOR 12M start (%)",
+    "form.wiborSchedule6m": "Harmonogram WIBOR 6M (format: <code>miesiac:wartosc</code>, np. <code>13:4.1, 25:4.6</code>)",
+    "form.wiborSchedule12m": "Harmonogram WIBOR 12M (format: <code>miesiac:wartosc</code>, np. <code>13:4.0, 25:4.5</code>)",
+    "info.ltv": "LTV to Loan-to-Value: jaki procent wartosci nieruchomosci finansujesz kredytem.",
+    "info.referenceIndex": "Wybierasz, czy baza stopy to WIBOR 6M czy WIBOR 12M.",
+    "info.spread": "Spread (pp = punkty procentowe) tworzy dodatkowe scenariusze: low = base - spread, high = base + spread. Wykresy pokazuja wszystkie trzy scenariusze.",
+    "info.wibor6m": "WIBOR 6M to stawka referencyjna dla okresu 6 miesiecy.",
+    "info.wibor12m": "WIBOR 12M (1R) to stawka referencyjna dla okresu 12 miesiecy.",
     "form.wiborLow": "WIBOR niski (%)",
     "form.wiborBase": "WIBOR bazowy (aktualny 6M) (%)",
     "form.wiborHigh": "WIBOR wysoki (%)",
@@ -43,6 +59,7 @@ const TRANSLATIONS = {
     "form.startingCapital": "Kapital startowy najemcy (PLN)",
     "form.saleMonths": "Miesiace sprzedazy (CSV, np. <code>24,36,48</code>)",
     "button.recalc": "Przelicz",
+    "button.fetchWibor": "Pobierz aktualny WIBOR",
     "lang.switch": "EN",
     "lang.aria": "Switch language",
     "scenario.low": "Niski",
@@ -52,6 +69,11 @@ const TRANSLATIONS = {
     "status.done": "Gotowe: {time}",
     "status.invalid": "Gotowe, ale pominieto bledne wpisy harmonogramu: {items}",
     "status.error": "Blad: {message}",
+    "wibor.meta.default": "Brak pobrania online. Uzywane sa wartosci wpisane recznie.",
+    "wibor.meta.loading": "Pobieranie WIBOR ze zrodla online...",
+    "wibor.meta.ok": "Pobrano WIBOR (data: {date}) 6M: {six}% | 12M: {twelve}%",
+    "wibor.meta.fallback": "Nie udalo sie pobrac WIBOR ({message}). Uzywane sa wartosci reczne.",
+    "wibor.source": "Zrodlo: Bankier (dane: GPW Benchmark)",
     "term.years": "{years} lat",
     "unit.monthShort": "m-c",
     "summary.baseInstallment": "Rata bazowa (WIBOR bazowy)",
@@ -117,22 +139,22 @@ const TRANSLATIONS = {
     "diag.diff": "Roznica kupno - wynajem",
     "diag.diff.note": "Dodatnia wartosc oznacza przewage zakupu w wybranym miesiacu.",
     "diagnostics.title": "Jak powstal wynik",
-    "diagnostics.explain": "Tabela rozklada wynik bazowy na skladniki. Dzięki temu widac, czy przewaga kupna albo wynajmu wynika z equity mieszkania, kosztow wejscia, wysokosci salda kredytu czy z portfela inwestycyjnego.",
+    "diagnostics.explain": "Tabela rozklada wynik bazowy na skladniki. Dzieki temu widac, czy przewaga kupna albo wynajmu wynika z equity mieszkania, kosztow wejscia, wysokosci salda kredytu czy z portfela inwestycyjnego.",
     "diagnostics.col.item": "Element",
     "diagnostics.col.value": "Wartosc",
     "diagnostics.col.how": "Jak liczona",
-    "results.explain": "Tabela pokazuje majatek netto dla wynajmu oraz kupna w scenariuszach niski/bazowy/wysoki. Kolumny roznic to <code>kupno - wynajem</code>, wiec dodatnia wartosc oznacza przewage zakupu.",
+    "results.explain": "Tabela pokazuje majatek netto dla wynajmu i kupna w scenariuszu bazowym. Kolumna roznicy to <code>kupno - wynajem</code>, wiec dodatnia wartosc oznacza przewage zakupu.",
     "results.col.month": "Miesiac sprzedazy",
     "results.col.rent": "Wynajem (PLN)",
     "results.col.buyLow": "Kupno niski WIBOR (PLN)",
-    "results.col.buyBase": "Kupno bazowy WIBOR (PLN)",
+    "results.col.buyBase": "Kupno (PLN)",
     "results.col.buyHigh": "Kupno wysoki WIBOR (PLN)",
     "results.col.diffLow": "Roznica niski (K-W)",
-    "results.col.diffBase": "Roznica bazowy (K-W)",
+    "results.col.diffBase": "Roznica (K-W)",
     "results.col.diffHigh": "Roznica wysoki (K-W)",
     "sensitivity.explain": "Sprawdzamy wynik bazowy dla wybranego miesiaca przy zmianie wzrostu wartosci mieszkania oraz bazowego WIBOR. W komorce widzisz roznice: <code>kupno bazowe - wynajem</code>. To szybka analiza, jak wrazliwy jest wynik na zmiane rynku nieruchomosci i kosztu pieniadza.",
     "sensitivity.header": "Wzrost mieszkania / WIBOR bazowy",
-    "charts.explain1": "Na osi X sa miesiace, na osi Y majatek netto. Domyslnie widok 5 lat (60 miesiecy), mozna oddalic do pelnego okresu kredytu, ale kazdy wykres i tak konczy sie w miesiacu pelnej splaty danego scenariusza.",
+    "charts.explain1": "Na osi X sa miesiace, na osi Y majatek netto. Domyslnie widok 5 lat (60 miesiecy), mozna oddalic do pelnego okresu kredytu, ale wykres i tak konczy sie w miesiacu pelnej splaty.",
     "charts.zoomIn": "Przybliz",
     "charts.zoomOut": "Oddal",
     "charts.range": "Zakres:",
@@ -166,6 +188,11 @@ const TRANSLATIONS = {
     "section.sensitivity": "Sensitivity analysis",
     "section.charts": "Charts",
     "section.amortization": "Mortgage amortization (base WIBOR)",
+    "group.property": "Property",
+    "group.rates": "Rate and WIBOR",
+    "group.overpay": "Overpayments",
+    "group.buyCosts": "Purchase and ownership",
+    "group.rentInvest": "Rent and investing",
     "params.explain1": "Input parameters drive both paths. <code>Loan amount = Property value * LTV</code>, <code>Down payment = Property value - Loan</code>, and <code>Renter starting capital = Down payment</code>, so funds used for purchase stay invested in the rent scenario.",
     "params.explain2": "Mortgage scenario: an annuity installment is calculated every month, with monthly surplus and extra schedule payments added on top. Rent scenario: the renter pays rent and rent-related costs, while investing starting capital, monthly surplus, and the positive difference between base mortgage cost and rent cost.",
     "params.explain3": "Owner costs are monthly maintenance costs on the buying side. Additional rent costs work analogously on the renter side. Investment rate and capital gains tax apply to both investment portfolios.",
@@ -176,6 +203,17 @@ const TRANSLATIONS = {
     "form.termMonths": "Repayment period (months)",
     "form.termYears": "Years (full)",
     "form.margin": "Bank margin (%)",
+    "form.referenceIndex": "Reference index",
+    "form.wiborSpread": "Low/high scenario spread (pp)",
+    "form.wibor6m": "WIBOR 6M start (%)",
+    "form.wibor12m": "WIBOR 12M start (%)",
+    "form.wiborSchedule6m": "WIBOR 6M schedule (format: <code>month:value</code>, e.g. <code>13:4.1, 25:4.6</code>)",
+    "form.wiborSchedule12m": "WIBOR 12M schedule (format: <code>month:value</code>, e.g. <code>13:4.0, 25:4.5</code>)",
+    "info.ltv": "LTV means Loan-to-Value: what share of the property price is financed by mortgage.",
+    "info.referenceIndex": "Choose whether the base rate path uses WIBOR 6M or WIBOR 12M.",
+    "info.spread": "Spread (pp = percentage points) builds extra scenarios: low = base - spread, high = base + spread. Charts display all three scenarios.",
+    "info.wibor6m": "WIBOR 6M is the reference rate for a 6-month tenor.",
+    "info.wibor12m": "WIBOR 12M (1R) is the reference rate for a 12-month tenor.",
     "form.wiborLow": "WIBOR low (%)",
     "form.wiborBase": "WIBOR base (current 6M) (%)",
     "form.wiborHigh": "WIBOR high (%)",
@@ -198,6 +236,7 @@ const TRANSLATIONS = {
     "form.startingCapital": "Renter starting capital (PLN)",
     "form.saleMonths": "Sale months (CSV, e.g. <code>24,36,48</code>)",
     "button.recalc": "Recalculate",
+    "button.fetchWibor": "Fetch current WIBOR",
     "lang.switch": "PL",
     "lang.aria": "Switch language",
     "scenario.low": "Low",
@@ -207,6 +246,11 @@ const TRANSLATIONS = {
     "status.done": "Done: {time}",
     "status.invalid": "Done, but skipped invalid schedule entries: {items}",
     "status.error": "Error: {message}",
+    "wibor.meta.default": "No online fetch yet. Manual values are being used.",
+    "wibor.meta.loading": "Fetching WIBOR from online source...",
+    "wibor.meta.ok": "Fetched WIBOR (date: {date}) 6M: {six}% | 12M: {twelve}%",
+    "wibor.meta.fallback": "Could not fetch WIBOR ({message}). Manual values are being used.",
+    "wibor.source": "Source: Bankier (data: GPW Benchmark)",
     "term.years": "{years} years",
     "unit.monthShort": "m",
     "summary.baseInstallment": "Base installment (base WIBOR)",
@@ -276,18 +320,18 @@ const TRANSLATIONS = {
     "diagnostics.col.item": "Item",
     "diagnostics.col.value": "Value",
     "diagnostics.col.how": "How calculated",
-    "results.explain": "This table shows net wealth for rent and buy under low/base/high WIBOR scenarios. Difference columns are <code>buy - rent</code>, so positive values mean buying is better.",
+    "results.explain": "This table shows net wealth for rent and buy in the base scenario. The difference column is <code>buy - rent</code>, so positive values mean buying is better.",
     "results.col.month": "Sale month",
     "results.col.rent": "Rent (PLN)",
     "results.col.buyLow": "Buy low WIBOR (PLN)",
-    "results.col.buyBase": "Buy base WIBOR (PLN)",
+    "results.col.buyBase": "Buy (PLN)",
     "results.col.buyHigh": "Buy high WIBOR (PLN)",
     "results.col.diffLow": "Diff low (B-R)",
-    "results.col.diffBase": "Diff base (B-R)",
+    "results.col.diffBase": "Diff (B-R)",
     "results.col.diffHigh": "Diff high (B-R)",
     "sensitivity.explain": "Base result for selected month is stress-tested against home growth and base WIBOR changes. Each cell shows <code>base buy - rent</code>. This is a quick sensitivity check for real-estate trend and cost of money.",
     "sensitivity.header": "Home growth / base WIBOR",
-    "charts.explain1": "X axis shows months and Y axis shows net wealth. Default view is 5 years (60 months); you can zoom out to full mortgage period, but each chart still ends at payoff month for its scenario.",
+    "charts.explain1": "X axis shows months and Y axis shows net wealth. Default view is 5 years (60 months); you can zoom out to the full mortgage period, but the chart still ends at payoff month.",
     "charts.zoomIn": "Zoom in",
     "charts.zoomOut": "Zoom out",
     "charts.range": "Range:",
@@ -321,7 +365,7 @@ function getInitialLanguage() {
 }
 
 let currentLang = getInitialLanguage();
-let fmtMoney = new Intl.NumberFormat(currentLang === "pl" ? "pl-PL" : "en-US", {
+let fmtMoney = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 });
@@ -339,6 +383,14 @@ function applyTranslations() {
     const key = el.getAttribute("data-i18n");
     el.innerHTML = t(key);
   });
+  document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-title");
+    const tooltipText = t(key);
+    el.setAttribute("title", tooltipText);
+    el.setAttribute("data-tooltip", tooltipText);
+    el.setAttribute("aria-label", tooltipText);
+    if (!el.hasAttribute("tabindex")) el.setAttribute("tabindex", "0");
+  });
   const switchText = byId("langSwitchText");
   if (switchText) switchText.textContent = t("lang.switch");
   const switchBtn = byId("langSwitch");
@@ -349,7 +401,7 @@ function applyTranslations() {
 function setLanguage(lang) {
   currentLang = SUPPORTED_LANGS.includes(lang) ? lang : "pl";
   localStorage.setItem("appLang", currentLang);
-  fmtMoney = new Intl.NumberFormat(currentLang === "pl" ? "pl-PL" : "en-US", {
+  fmtMoney = new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   });
@@ -362,18 +414,12 @@ function formatMoney(value) {
   return fmtMoney.format(Number.isFinite(num) ? Math.round(num) : 0);
 }
 
-const SCENARIOS = [
-  { key: "low", wiborField: "wiborLow" },
-  { key: "base", wiborField: "wiborBase" },
-  { key: "high", wiborField: "wiborHigh" },
-];
-
 function byId(id) {
   return document.getElementById(id);
 }
 
 function readNumber(id, fallback, opts = {}) {
-  const raw = Number(byId(id).value);
+  const raw = Number(String(byId(id).value).replace(",", "."));
   let value = Number.isFinite(raw) ? raw : fallback;
   if (typeof opts.min === "number") value = Math.max(opts.min, value);
   if (typeof opts.max === "number") value = Math.min(opts.max, value);
@@ -390,25 +436,50 @@ function parseSaleMonths(text, maxMonth) {
   )].sort((a, b) => a - b);
 }
 
-function parseOverpaySchedule(text) {
+function parseScheduleMap(text) {
   const map = new Map();
   const invalid = [];
   if (!text.trim()) return { map, invalid };
-
   for (const part of text.split(",")) {
     const [m, v] = part.split(":").map((x) => x.trim());
     const month = Number(m);
-    const value = Number(v);
+    const value = Number(String(v).replace(",", "."));
     if (Number.isFinite(month) && month > 0 && Number.isFinite(value) && value >= 0) {
       map.set(Math.round(month), value);
-    } else {
+    } else if (part.trim()) {
       invalid.push(part.trim());
     }
   }
-
   return { map, invalid };
 }
 
+function parseOverpaySchedule(text) {
+  return parseScheduleMap(text);
+}
+
+function parseRateSchedule(text) {
+  return parseScheduleMap(text);
+}
+
+function formatScheduleAmount(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) return "0";
+  return Number(num.toFixed(2)).toString();
+}
+
+function setOverpayScheduleMonth(month, amount) {
+  const scheduleInput = byId("overpaySchedule");
+  if (!scheduleInput || !Number.isFinite(month) || month <= 0) return;
+  const parsed = parseOverpaySchedule(scheduleInput.value);
+  const map = parsed.map;
+  if (!Number.isFinite(amount) || amount <= 0) map.delete(month);
+  else map.set(month, amount);
+  const text = [...map.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([m, v]) => `${m}:${formatScheduleAmount(v)}`)
+    .join(", ");
+  scheduleInput.value = text;
+}
 function calcMonthlyPayment(principal, annualRate, months) {
   const r = annualRate / 12;
   if (principal <= 0 || months <= 0) return 0;
@@ -428,21 +499,23 @@ function advanceInvestmentAccount(state, contribution, annualRatePct, taxRatePct
   return { grossBalance, contributions, afterTax };
 }
 
-function calcMortgageScenario(params, scenarioWiborPct, overpaySchedule) {
-  const annualRate = (params.marginPct + scenarioWiborPct) / 100;
-  const monthlyPayment = calcMonthlyPayment(params.loanAmount, annualRate, params.termMonths);
-
+function calcMortgageScenario(params, ratePathPct, overpaySchedule) {
   const rows = [];
   let balance = params.loanAmount;
   let cumulativeCashOut = 0;
   let cumulativeOverpay = 0;
   let cumulativeOwnerCosts = 0;
   let payoffMonth = null;
+  let initialMonthlyPayment = 0;
 
   for (let month = 1; month <= params.termMonths; month++) {
-    const baseOverpay = Math.max(params.monthlySurplus, 0);
-    const scheduledExtra = Math.max(overpaySchedule.get(month) || 0, 0);
-    const requestedOverpay = baseOverpay + scheduledExtra;
+    const wiborPct = ratePathPct[Math.min(ratePathPct.length, month) - 1] ?? 0;
+    const annualRate = (params.marginPct + wiborPct) / 100;
+    const monthsLeft = params.termMonths - month + 1;
+    const defaultOverpay = Math.max(params.monthlySurplus, 0);
+    const hasScheduledOverpay = overpaySchedule.has(month);
+    const scheduledOverpay = hasScheduledOverpay ? Math.max(overpaySchedule.get(month) || 0, 0) : 0;
+    const requestedOverpay = hasScheduledOverpay ? scheduledOverpay : defaultOverpay;
 
     let interest = 0;
     let principal = 0;
@@ -453,7 +526,8 @@ function calcMortgageScenario(params, scenarioWiborPct, overpaySchedule) {
 
     if (balance > 0) {
       interest = balance * (annualRate / 12);
-      baseInstallment = monthlyPayment;
+      baseInstallment = calcMonthlyPayment(balance, annualRate, monthsLeft);
+      if (month === 1) initialMonthlyPayment = baseInstallment;
       principal = Math.min(Math.max(baseInstallment - interest, 0), balance);
       overpay = Math.min(requestedOverpay, Math.max(balance - principal, 0));
       totalInstallment = baseInstallment + overpay;
@@ -472,6 +546,8 @@ function calcMortgageScenario(params, scenarioWiborPct, overpaySchedule) {
       principal,
       overpay,
       requestedOverpay,
+      defaultOverpay,
+      hasScheduledOverpay,
       unusedOverpay,
       baseInstallment,
       totalInstallment,
@@ -483,7 +559,7 @@ function calcMortgageScenario(params, scenarioWiborPct, overpaySchedule) {
     });
   }
 
-  return { monthlyPayment, payoffMonth: payoffMonth || params.termMonths, rows };
+  return { monthlyPayment: initialMonthlyPayment, payoffMonth: payoffMonth || params.termMonths, rows };
 }
 
 function calcRentCosts(params) {
@@ -612,6 +688,24 @@ function calcBuyTrack(params, mortgageRows, rentCosts, endMonth) {
   return rows;
 }
 
+function buildWiborPath(termMonths, baseStartPct, scheduleMap) {
+  const path = [];
+  let current = Math.max(baseStartPct, 0);
+  for (let month = 1; month <= termMonths; month++) {
+    if (scheduleMap.has(month)) current = Math.max(Number(scheduleMap.get(month)) || 0, 0);
+    path.push(current);
+  }
+  return path;
+}
+
+function getScenarioRatePath(basePath, deltaLowPct, deltaHighPct) {
+  return {
+    low: basePath.map((v) => Math.max(0, v - deltaLowPct)),
+    base: [...basePath],
+    high: basePath.map((v) => Math.max(0, v + deltaHighPct)),
+  };
+}
+
 function safePoint(arr, month, field) {
   const row = arr[month - 1];
   return row ? row[field] : 0;
@@ -688,19 +782,26 @@ function collectParams() {
     rentStepInterval: readNumber("rentStepInterval", 24, { min: 1, max: 360 }),
     investMode: byId("investMode").value,
     investRatePct: readNumber("investRate", 3.7, { min: 0, max: 100 }),
-    wiborLowPct: readNumber("wiborLow", 3.0, { min: 0, max: 100 }),
-    wiborBasePct: readNumber("wiborBase", 3.7, { min: 0, max: 100 }),
-    wiborHighPct: readNumber("wiborHigh", 4.5, { min: 0, max: 100 }),
+    referenceIndex: byId("referenceIndex").value === "12M" ? "12M" : "6M",
+    wiborSpreadPct: readNumber("wiborSpread", 0.5, { min: 0, max: 10 }),
+    wibor6mStartPct: readNumber("wibor6m", 4.2, { min: 0, max: 100 }),
+    wibor12mStartPct: readNumber("wibor12m", 4.4, { min: 0, max: 100 }),
     saleMonths: [],
   };
 }
 
-function buildModel(params, scheduleMap) {
+function buildModel(params, overpayScheduleMap, rateSchedules, opts = {}) {
+  const startBase = params.referenceIndex === "12M" ? params.wibor12mStartPct : params.wibor6mStartPct;
+  const selectedRateSchedule = params.referenceIndex === "12M" ? rateSchedules.schedule12 : rateSchedules.schedule6;
+  const shiftedStart = Math.max(0, startBase + (opts.baseShiftPct || 0));
+  const basePath = buildWiborPath(params.termMonths, shiftedStart, selectedRateSchedule);
+  const scenarioRatePath = getScenarioRatePath(basePath, params.wiborSpreadPct, params.wiborSpreadPct);
+
   const rentCosts = calcRentCosts(params);
   const mortgages = {
-    low: calcMortgageScenario(params, params.wiborLowPct, scheduleMap),
-    base: calcMortgageScenario(params, params.wiborBasePct, scheduleMap),
-    high: calcMortgageScenario(params, params.wiborHighPct, scheduleMap),
+    low: calcMortgageScenario(params, scenarioRatePath.low, overpayScheduleMap),
+    base: calcMortgageScenario(params, scenarioRatePath.base, overpayScheduleMap),
+    high: calcMortgageScenario(params, scenarioRatePath.high, overpayScheduleMap),
   };
 
   const horizons = {
@@ -710,17 +811,21 @@ function buildModel(params, scheduleMap) {
   };
 
   const rentTrack = calcRentTrack(params, rentCosts, mortgages.base.rows, horizons.base);
+  const modelParams = opts.homeGrowthPct === undefined ? params : { ...params, homeGrowthPct: opts.homeGrowthPct };
   const buyTracks = {
-    low: calcBuyTrack(params, mortgages.low.rows, rentCosts, horizons.low),
-    base: calcBuyTrack(params, mortgages.base.rows, rentCosts, horizons.base),
-    high: calcBuyTrack(params, mortgages.high.rows, rentCosts, horizons.high),
+    low: calcBuyTrack(modelParams, mortgages.low.rows, rentCosts, horizons.low),
+    base: calcBuyTrack(modelParams, mortgages.base.rows, rentCosts, horizons.base),
+    high: calcBuyTrack(modelParams, mortgages.high.rows, rentCosts, horizons.high),
   };
 
-  return { rentCosts, mortgages, rentTrack, buyTracks, horizons };
+  return { rentCosts, mortgages, rentTrack, buyTracks, horizons, basePath, scenarioRatePath };
 }
 
-function evaluateBaseDifferenceAtMonth(params, summaryMonth, wiborBasePct, homeGrowthPct, scheduleMap) {
-  const model = buildModel({ ...params, wiborBasePct, homeGrowthPct }, scheduleMap);
+function evaluateBaseDifferenceAtMonth(params, summaryMonth, wiborShiftPct, homeGrowthPct, overpayScheduleMap, rateSchedules) {
+  const model = buildModel(params, overpayScheduleMap, rateSchedules, {
+    baseShiftPct: wiborShiftPct,
+    homeGrowthPct,
+  });
   return safePoint(model.buyTracks.base, summaryMonth, "wealth") - safePoint(model.rentTrack, summaryMonth, "wealth");
 }
 
@@ -729,18 +834,19 @@ function calculateAll() {
   status.textContent = t("status.calculating");
 
   const params = collectParams();
-  const { map: scheduleMap, invalid } = parseOverpaySchedule(byId("overpaySchedule").value);
+  const overpayParsed = parseOverpaySchedule(byId("overpaySchedule").value);
+  const rate6Parsed = parseRateSchedule(byId("wiborSchedule6m").value);
+  const rate12Parsed = parseRateSchedule(byId("wiborSchedule12m").value);
+  const invalid = [...overpayParsed.invalid, ...rate6Parsed.invalid, ...rate12Parsed.invalid];
+  const rateSchedules = { schedule6: rate6Parsed.map, schedule12: rate12Parsed.map };
 
   params.saleMonths = parseSaleMonths(byId("saleMonths").value, params.termMonths);
-  const model = buildModel(params, scheduleMap);
+  const model = buildModel(params, overpayParsed.map, rateSchedules);
   const summaryMaxMonth = model.horizons.base;
-  const chartMaxMonth = Math.max(model.horizons.low, model.horizons.base, model.horizons.high);
-  const crossLow = findCrossMonth(model.buyTracks.low, model.rentTrack);
+  const chartMaxMonth = model.horizons.base;
   const crossBase = findCrossMonth(model.buyTracks.base, model.rentTrack);
-  const crossHigh = findCrossMonth(model.buyTracks.high, model.rentTrack);
-  const crossCandidates = [crossLow, crossBase, crossHigh].filter((x) => Number.isFinite(x));
-  const preferredView = crossCandidates.length > 0
-    ? Math.min(chartMaxMonth, Math.max(60, Math.max(...crossCandidates) + 12))
+  const preferredView = Number.isFinite(crossBase)
+    ? Math.min(chartMaxMonth, Math.max(60, crossBase + 12))
     : Math.min(60, chartMaxMonth);
 
   if (params.saleMonths.length === 0) {
@@ -772,8 +878,8 @@ function calculateAll() {
   renderSummary(model, summaryMonth);
   renderDiagnostics(model, summaryMonth);
   renderTable(resultRows);
-  renderSensitivityTable(params, summaryMonth, scheduleMap);
-  renderAmortizationTable(model.mortgages.base.rows, model.horizons.base);
+  renderSensitivityTable(params, summaryMonth, overpayParsed.map, rateSchedules);
+  renderAmortizationTable(model.mortgages.base.rows, model.horizons.base, params.monthlySurplus);
   renderChart("chartLow", t("scenario.low"), model.buyTracks.low, model.rentTrack, model.horizons.low, viewMonths);
   renderChart("chartBase", t("scenario.base"), model.buyTracks.base, model.rentTrack, model.horizons.base, viewMonths);
   renderChart("chartHigh", t("scenario.high"), model.buyTracks.high, model.rentTrack, model.horizons.high, viewMonths);
@@ -782,7 +888,6 @@ function calculateAll() {
     ? t("status.invalid", { items: invalid.join(" | ") })
     : t("status.done", { time: new Date().toLocaleTimeString(currentLang === "pl" ? "pl-PL" : "en-US") });
 }
-
 function renderSummary(model, summaryMonth) {
   const summary = byId("summary");
   const rentAtMonth = safePoint(model.rentTrack, summaryMonth, "wealth");
@@ -813,7 +918,10 @@ function renderSummary(model, summaryMonth) {
 }
 
 function renderDiagnostics(model, summaryMonth) {
-  const tbody = byId("diagnosticsTable").querySelector("tbody");
+  const table = byId("diagnosticsTable");
+  if (!table) return;
+  const tbody = table.querySelector("tbody");
+  if (!tbody) return;
   tbody.innerHTML = "";
 
   const buyRow = safeRow(model.buyTracks.base, summaryMonth);
@@ -841,7 +949,11 @@ function renderDiagnostics(model, summaryMonth) {
 
   for (const [label, value, note] of rows) {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${label}</td><td>${formatMoney(value)} PLN</td><td>${note}</td>`;
+    tr.innerHTML = `
+      <td>${label}</td>
+      <td>${formatMoney(value)} PLN</td>
+      <td>${note}</td>
+    `;
     tbody.appendChild(tr);
   }
 }
@@ -854,43 +966,52 @@ function kpi(title, value, note) {
 }
 
 function renderTable(rows) {
-  const tbody = byId("resultsTable").querySelector("tbody");
+  const table = byId("resultsTable");
+  if (!table) return;
+  const tbody = table.querySelector("tbody");
+  if (!tbody) return;
   tbody.innerHTML = "";
   for (const r of rows) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${r.month}</td>
       <td>${formatMoney(r.rent)}</td>
-      <td>${formatMoney(r.buyLow)}</td>
       <td>${formatMoney(r.buyBase)}</td>
-      <td>${formatMoney(r.buyHigh)}</td>
-      <td class="${r.diffLow >= 0 ? "positive" : "negative"}">${formatMoney(r.diffLow)}</td>
       <td class="${r.diffBase >= 0 ? "positive" : "negative"}">${formatMoney(r.diffBase)}</td>
-      <td class="${r.diffHigh >= 0 ? "positive" : "negative"}">${formatMoney(r.diffHigh)}</td>
     `;
     tbody.appendChild(tr);
   }
 }
 
-function renderSensitivityTable(params, summaryMonth, scheduleMap) {
+function renderSensitivityTable(params, summaryMonth, overpayScheduleMap, rateSchedules) {
   const table = byId("sensitivityTable");
+  if (!table) return;
   const thead = table.querySelector("thead");
   const tbody = table.querySelector("tbody");
+  if (!thead || !tbody) return;
   const growthDeltas = [-2, 0, 2];
   const wiborDeltas = [-1, 0, 1];
+  const startBase = params.referenceIndex === "12M" ? params.wibor12mStartPct : params.wibor6mStartPct;
 
   thead.innerHTML = "";
   tbody.innerHTML = "";
 
   const headerRow = document.createElement("tr");
-  headerRow.innerHTML = `<th>${t("sensitivity.header")}</th>${wiborDeltas.map((d) => `<th>${(params.wiborBasePct + d).toFixed(1)}%</th>`).join("")}`;
+  headerRow.innerHTML = `<th>${t("sensitivity.header")}</th>${wiborDeltas.map((d) => `<th>${(startBase + d).toFixed(1)}%</th>`).join("")}`;
   thead.appendChild(headerRow);
 
   for (const growthDelta of growthDeltas) {
     const tr = document.createElement("tr");
     const cells = [`<td>${(params.homeGrowthPct + growthDelta).toFixed(1)}%</td>`];
     for (const wiborDelta of wiborDeltas) {
-      const value = evaluateBaseDifferenceAtMonth(params, summaryMonth, Math.max(0, params.wiborBasePct + wiborDelta), params.homeGrowthPct + growthDelta, scheduleMap);
+      const value = evaluateBaseDifferenceAtMonth(
+        params,
+        summaryMonth,
+        wiborDelta,
+        params.homeGrowthPct + growthDelta,
+        overpayScheduleMap,
+        rateSchedules,
+      );
       cells.push(`<td class="${value >= 0 ? "positive" : "negative"}">${formatMoney(value)}</td>`);
     }
     tr.innerHTML = cells.join("");
@@ -898,26 +1019,47 @@ function renderSensitivityTable(params, summaryMonth, scheduleMap) {
   }
 }
 
-function renderAmortizationTable(baseRows, payoffMonth) {
-  const tbody = byId("amortizationTable").querySelector("tbody");
+function renderAmortizationTable(baseRows, payoffMonth, monthlySurplus) {
+  const table = byId("amortizationTable");
+  if (!table) return;
+  const tbody = table.querySelector("tbody");
+  if (!tbody) return;
   tbody.innerHTML = "";
   for (const r of baseRows) {
     if (r.month > payoffMonth) break;
     const tr = document.createElement("tr");
+    const editableOverpay = Math.max(r.requestedOverpay || monthlySurplus || 0, 0);
     tr.innerHTML = `
       <td>${r.month}</td>
       <td>${formatMoney(r.totalInstallment)}</td>
       <td>${formatMoney(r.interest)}</td>
       <td>${formatMoney(r.principal)}</td>
-      <td>${formatMoney(r.overpay)}</td>
+      <td><input class="overpay-edit" type="number" min="0" step="100" data-month="${r.month}" value="${Math.round(editableOverpay)}" /></td>
       <td>${formatMoney(r.endBalance)}</td>
     `;
     tbody.appendChild(tr);
   }
+
+  tbody.querySelectorAll(".overpay-edit").forEach((input) => {
+    const applyChange = () => {
+      const month = Number(input.getAttribute("data-month"));
+      const value = Number(String(input.value).replace(",", "."));
+      setOverpayScheduleMonth(month, Number.isFinite(value) ? Math.max(value, 0) : 0);
+      calculateAll();
+    };
+    input.addEventListener("change", applyChange);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        applyChange();
+      }
+    });
+  });
 }
 
 function renderChart(containerId, title, buySeries, rentSeries, payoffMonth, viewMonths) {
   const container = byId(containerId);
+  if (!container) return;
   container.innerHTML = "";
 
   const horizon = Math.min(payoffMonth, viewMonths);
@@ -1009,10 +1151,10 @@ function initBindings() {
 
   byId("recalcBtn").addEventListener("click", recalc);
   const quickIds = [
-    "propertyValue", "ltv", "termMonths", "margin", "wiborLow", "wiborBase", "wiborHigh",
+    "propertyValue", "ltv", "termMonths", "margin", "referenceIndex", "wiborSpread", "wibor6m", "wibor12m",
     "monthlySurplus", "homeGrowth", "entryCost", "saleCost", "ownerMonthlyCosts",
     "renterMonthlyExtras", "investmentTaxRate", "rentStart", "rentMode", "rentStep",
-    "rentStepInterval", "investMode", "investRate", "saleMonths", "overpaySchedule"
+    "rentStepInterval", "investMode", "investRate", "saleMonths", "overpaySchedule", "wiborSchedule6m", "wiborSchedule12m"
   ];
   for (const id of quickIds) byId(id).addEventListener("change", recalc);
 
@@ -1035,12 +1177,54 @@ function initBindings() {
     setLanguage(currentLang === "pl" ? "en" : "pl");
   });
 
+
   setLanguage(getInitialLanguage());
   appReady = true;
   recalc();
 }
 
 initBindings();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

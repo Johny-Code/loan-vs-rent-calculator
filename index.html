@@ -12,7 +12,7 @@
       <h1 data-i18n="hero.title">Kredyt vs Wynajem</h1>
       <p data-i18n="hero.subtitle">Porownanie majatku netto po sprzedazy mieszkania dla scenariuszy WIBOR.</p>
       <button id="langSwitch" class="lang-switch" type="button" aria-label="Switch language">
-        <span aria-hidden="true">🌐</span>
+        <span aria-hidden="true">??</span>
         <span id="langSwitchText">EN</span>
       </button>
     </header>
@@ -24,25 +24,40 @@
         <p class="explain" data-i18n="params.explain2">Scenariusz kredytu: co miesiac liczona jest rata annuitetowa, do ktorej moga dojsc miesieczne nadwyzki finansowe i dodatkowe nadplaty z harmonogramu. Scenariusz najmu: najemca placi czynsz i koszty najmu, a inwestuje kapital startowy, miesieczne nadwyzki oraz dodatnia roznice miedzy kosztem kredytu bazowego a kosztem najmu.</p>
         <p class="explain" data-i18n="params.explain3">Koszty wlasciciela to miesieczne koszty utrzymania po stronie kupujacego. Dodatkowe koszty najmu dzialaja analogicznie po stronie najemcy. Stopa inwestycji oraz podatek od zyskow dotycza obu portfeli inwestycyjnych.</p>
         <div class="form-grid">
+          <div class="group-title full" data-i18n="group.property">Nieruchomosc</div>
           <label><span data-i18n="form.propertyValue">Wartosc nieruchomosci (PLN)</span><input id="propertyValue" type="number" value="850000" /></label>
-          <label><span data-i18n="form.ltv">LTV (%)</span><input id="ltv" type="number" value="80" min="0" max="100" step="0.1" /></label>
+          <label><span data-i18n="form.ltv">LTV (%)</span><span class="info-dot" data-i18n-title="info.ltv" title=""></span><input id="ltv" type="number" value="80" min="0" max="100" step="0.1" /></label>
           <label><span data-i18n="form.loanAmount">Kwota kredytu (PLN)</span><input id="loanAmount" type="number" value="749700" readonly /></label>
           <label><span data-i18n="form.downPayment">Wklad wlasny (PLN)</span><input id="downPayment" type="number" value="100300" readonly /></label>
 
           <label><span data-i18n="form.termMonths">Okres splaty (miesiace)</span><input id="termMonths" type="number" value="360" min="1" max="360" /></label>
           <label class="readonly"><span data-i18n="form.termYears">Lata (pelne)</span><input id="termYearsInfo" type="text" value="30 lat" readonly /></label>
 
+          <div class="group-title full" data-i18n="group.rates">Stopa i WIBOR</div>
           <label><span data-i18n="form.margin">Marza (%)</span><input id="margin" type="number" value="2.15" step="0.01" /></label>
-          <label><span data-i18n="form.wiborLow">WIBOR niski (%)</span><input id="wiborLow" type="number" value="3.5" step="0.01" /></label>
-          <label><span data-i18n="form.wiborBase">WIBOR bazowy (aktualny 6M) (%)</span><input id="wiborBase" type="number" value="4.2" step="0.01" /></label>
-          <label><span data-i18n="form.wiborHigh">WIBOR wysoki (%)</span><input id="wiborHigh" type="number" value="4.7" step="0.01" /></label>
-
+          <label><span data-i18n="form.referenceIndex">Indeks referencyjny</span><span class="info-dot" data-i18n-title="info.referenceIndex" title=""></span>
+            <select id="referenceIndex">
+              <option value="6M">WIBOR 6M</option>
+              <option value="12M">WIBOR 12M</option>
+            </select>
+          </label>
+          <label><span data-i18n="form.wiborSpread">Odchylenie scenariusza low/high (pp)</span><span class="info-dot" data-i18n-title="info.spread" title=""></span><input id="wiborSpread" type="number" value="0.5" step="0.01" min="0" /></label>
+          <label><span data-i18n="form.wibor6m">WIBOR 6M start (%)</span><span class="info-dot" data-i18n-title="info.wibor6m" title=""></span><input id="wibor6m" type="number" value="4.2" step="0.01" /></label>
+          <label><span data-i18n="form.wibor12m">WIBOR 12M start (%)</span><span class="info-dot" data-i18n-title="info.wibor12m" title=""></span><input id="wibor12m" type="number" value="4.4" step="0.01" /></label>
+          <label class="full"><span data-i18n="form.wiborSchedule6m">Harmonogram WIBOR 6M (format: <code>miesiac:wartosc</code>, np. <code>13:4.1, 25:4.6</code>)</span>
+            <textarea id="wiborSchedule6m" rows="2">6:4.0, 12:3.9, 24:3.7, 32:3.5</textarea>
+          </label>
+          <label class="full"><span data-i18n="form.wiborSchedule12m">Harmonogram WIBOR 12M (format: <code>miesiac:wartosc</code>, np. <code>13:4.0, 25:4.5</code>)</span>
+            <textarea id="wiborSchedule12m" rows="2"></textarea>
+          </label>
+          <div class="group-title full" data-i18n="group.overpay">Nadplaty</div>
           <label><span data-i18n="form.monthlySurplus">Nadwyzki finansowe (PLN/mc)</span><input id="monthlySurplus" type="number" value="2578" min="0" /></label>
 
           <label class="full"><span data-i18n="form.overpaySchedule">Harmonogram dodatkowych nadplat (format: <code>miesiac:kwota</code>, np. <code>1:500, 24:2000</code>)</span>
             <textarea id="overpaySchedule" rows="2"></textarea>
           </label>
 
+          <div class="group-title full" data-i18n="group.buyCosts">Zakup i utrzymanie</div>
           <label><span data-i18n="form.homeGrowth">Roczna zmiana wartosci mieszkania (%)</span><input id="homeGrowth" type="number" value="3" step="0.01" /></label>
           <label><span data-i18n="form.entryCost">Koszt wejscia w zakup (%)</span><input id="entryCost" type="number" value="2" step="0.01" /></label>
           <label><span data-i18n="form.saleCost">Koszt sprzedazy (%)</span><input id="saleCost" type="number" value="1" step="0.01" /></label>
@@ -50,6 +65,7 @@
           <label><span data-i18n="form.renterMonthlyExtras">Dodatkowe koszty najmu (PLN/mc)</span><input id="renterMonthlyExtras" type="number" value="0" min="0" /></label>
           <label><span data-i18n="form.investmentTaxRate">Podatek od zyskow inwestycji (%)</span><input id="investmentTaxRate" type="number" value="19" min="0" max="100" step="0.01" /></label>
 
+          <div class="group-title full" data-i18n="group.rentInvest">Najem i inwestycje</div>
           <label><span data-i18n="form.rentStart">Najem startowy (PLN/mc)</span><input id="rentStart" type="number" value="4000" /></label>
           <label><span data-i18n="form.rentMode">Model najmu</span>
             <select id="rentMode">
@@ -92,7 +108,7 @@
         <div id="summary" class="summary"></div>
 
         <h3 data-i18n="diagnostics.title">Jak powstal wynik</h3>
-        <p class="explain" data-i18n="diagnostics.explain">Tabela rozklada wynik bazowy na skladniki. Dzięki temu widac, czy przewaga kupna albo wynajmu wynika z equity mieszkania, kosztow wejscia, wysokosci salda kredytu czy z portfela inwestycyjnego.</p>
+        <p class="explain" data-i18n="diagnostics.explain">Tabela rozklada wynik bazowy na skladniki. Dzieki temu widac, czy przewaga kupna albo wynajmu wynika z equity mieszkania, kosztow wejscia, wysokosci salda kredytu czy z portfela inwestycyjnego.</p>
         <div class="table-wrap diagnostics-wrap">
           <table id="diagnosticsTable">
             <thead>
@@ -117,12 +133,8 @@
             <tr>
               <th data-i18n="results.col.month">Miesiac sprzedazy</th>
               <th data-i18n="results.col.rent">Wynajem (PLN)</th>
-              <th data-i18n="results.col.buyLow">Kupno niski WIBOR (PLN)</th>
-              <th data-i18n="results.col.buyBase">Kupno bazowy WIBOR (PLN)</th>
-              <th data-i18n="results.col.buyHigh">Kupno wysoki WIBOR (PLN)</th>
-              <th data-i18n="results.col.diffLow">Roznica niski (K-W)</th>
-              <th data-i18n="results.col.diffBase">Roznica bazowy (K-W)</th>
-              <th data-i18n="results.col.diffHigh">Roznica wysoki (K-W)</th>
+              <th data-i18n="results.col.buyBase">Kupno (PLN)</th>
+              <th data-i18n="results.col.diffBase">Roznica (K-W)</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -171,7 +183,7 @@
     <section class="panel">
       <h2 data-i18n="section.amortization">Harmonogram kredytu (WIBOR bazowy)</h2>
       <p class="explain" data-i18n="amortization.explain">Rata = odsetki + kapital + nadplata. Tabela pokazuje wylacznie realny okres splaty kredytu bazowego. Po splacie nie ma juz kolejnych wierszy z zerowymi ratami.</p>
-      <div class="table-wrap">
+      <div class="table-wrap amortization-wrap">
         <table id="amortizationTable">
           <thead>
             <tr>
@@ -192,3 +204,20 @@
   <script src="app.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
