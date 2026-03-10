@@ -379,3 +379,14 @@ svg {
   padding: 4px 6px;
 }
 
+
+.lang-flag {
+  display: inline-flex;
+  width: 20px;
+  height: 14px;
+  line-height: 0;
+}
+
+.lang-flag svg {
+  display: block;
+}

@@ -37,6 +37,9 @@ const TRANSLATIONS = {
     "info.spread": "Spread (pp = punkty procentowe) tworzy dodatkowe scenariusze: low = base - spread, high = base + spread. Wykresy pokazuja wszystkie trzy scenariusze.",
     "info.wibor6m": "WIBOR 6M to stawka referencyjna dla okresu 6 miesiecy.",
     "info.wibor12m": "WIBOR 12M (1R) to stawka referencyjna dla okresu 12 miesiecy.",
+    "info.investTaxMode": "Na wyjsciu = podatek liczony dopiero przy zamknieciu inwestycji. Od zrealizowanych = podatek potracany przy kazdej realizacji odsetek/kuponu.",
+    "info.investCompounding": "Kapitalizacja okresla, jak czesto naliczany jest zysk: co miesiac, co rok albo na zapadalnosci.",
+    "info.investMaturity": "Ustaw dlugosc okresu do wykupu, np. 36 miesiecy dla obligacji 3-letnich.",
     "form.wiborLow": "WIBOR niski (%)",
     "form.wiborBase": "WIBOR bazowy (aktualny 6M) (%)",
     "form.wiborHigh": "WIBOR wysoki (%)",
@@ -56,6 +59,14 @@ const TRANSLATIONS = {
     "form.rentStepInterval": "Skok najmu co ile miesiecy",
     "form.investMode": "Inwestowanie roznicy",
     "form.investRate": "Stopa inwestycji (%)",
+    "form.investTaxMode": "Tryb rozliczenia podatku",
+    "form.investTaxModeExit": "Na wyjsciu (sprzedaz/wykup)",
+    "form.investTaxModeRealized": "Od zrealizowanych odsetek/kuponu",
+    "form.investCompounding": "Kapitalizacja",
+    "form.investCompoundingMonthly": "Miesieczna",
+    "form.investCompoundingYearly": "Roczna",
+    "form.investCompoundingMaturity": "Na zapadalnosci",
+    "form.investMaturityMonths": "Termin wykupu (miesiace)",
     "form.startingCapital": "Kapital startowy najemcy (PLN)",
     "form.saleMonths": "Miesiace sprzedazy (CSV, np. <code>24,36,48</code>)",
     "button.recalc": "Przelicz",
@@ -214,6 +225,9 @@ const TRANSLATIONS = {
     "info.spread": "Spread (pp = percentage points) builds extra scenarios: low = base - spread, high = base + spread. Charts display all three scenarios.",
     "info.wibor6m": "WIBOR 6M is the reference rate for a 6-month tenor.",
     "info.wibor12m": "WIBOR 12M (1R) is the reference rate for a 12-month tenor.",
+    "info.investTaxMode": "At exit = tax is applied only when closing the investment. Realized coupon = tax is deducted whenever interest/coupon is realized.",
+    "info.investCompounding": "Compounding defines how often gains are added: monthly, yearly, or at maturity.",
+    "info.investMaturity": "For maturity compounding set the period length, e.g. 36 months for 3-year bonds.",
     "form.wiborLow": "WIBOR low (%)",
     "form.wiborBase": "WIBOR base (current 6M) (%)",
     "form.wiborHigh": "WIBOR high (%)",
@@ -233,6 +247,14 @@ const TRANSLATIONS = {
     "form.rentStepInterval": "Rent step every N months",
     "form.investMode": "Invest the difference",
     "form.investRate": "Investment rate (%)",
+    "form.investTaxMode": "Tax settlement mode",
+    "form.investTaxModeExit": "At exit (sale/redemption)",
+    "form.investTaxModeRealized": "On realized interest/coupon",
+    "form.investCompounding": "Compounding",
+    "form.investCompoundingMonthly": "Monthly",
+    "form.investCompoundingYearly": "Yearly",
+    "form.investCompoundingMaturity": "At maturity",
+    "form.investMaturityMonths": "Maturity (months)",
     "form.startingCapital": "Renter starting capital (PLN)",
     "form.saleMonths": "Sale months (CSV, e.g. <code>24,36,48</code>)",
     "button.recalc": "Recalculate",
@@ -377,6 +399,12 @@ function t(key, vars = {}) {
   return raw.replace(/\{(\w+)\}/g, (_, name) => (vars[name] ?? `{${name}}`));
 }
 
+function getFlagSvg(targetLang) {
+  if (targetLang === "pl") {
+    return `<svg viewBox="0 0 48 32" width="20" height="14" aria-hidden="true" focusable="false"><rect width="48" height="16" fill="#ffffff"></rect><rect y="16" width="48" height="16" fill="#dc143c"></rect><rect width="48" height="32" fill="none" stroke="#94a3b8" stroke-width="1"></rect></svg>`;
+  }
+  return `<svg viewBox="0 0 48 32" width="20" height="14" aria-hidden="true" focusable="false"><rect width="48" height="32" fill="#0a4ea3"></rect><path d="M0 0 L48 32 M48 0 L0 32" stroke="#ffffff" stroke-width="7"></path><path d="M0 0 L48 32 M48 0 L0 32" stroke="#d82b38" stroke-width="3.5"></path><rect x="20" width="8" height="32" fill="#ffffff"></rect><rect y="12" width="48" height="8" fill="#ffffff"></rect><rect x="22" width="4" height="32" fill="#d82b38"></rect><rect y="14" width="48" height="4" fill="#d82b38"></rect><rect width="48" height="32" fill="none" stroke="#94a3b8" stroke-width="1"></rect></svg>`;
+}
 function applyTranslations() {
   document.documentElement.lang = currentLang;
   document.querySelectorAll("[data-i18n]").forEach((el) => {
@@ -393,6 +421,11 @@ function applyTranslations() {
   });
   const switchText = byId("langSwitchText");
   if (switchText) switchText.textContent = t("lang.switch");
+  const switchFlag = byId("langSwitchFlag");
+  if (switchFlag) {
+    const targetLang = currentLang === "pl" ? "en" : "pl";
+    switchFlag.innerHTML = getFlagSvg(targetLang);
+  }
   const switchBtn = byId("langSwitch");
   if (switchBtn) switchBtn.setAttribute("aria-label", t("lang.aria"));
   document.title = t("meta.title");
@@ -492,10 +525,33 @@ function getAfterTaxInvestmentValue(grossBalance, contributions, taxRatePct) {
   return contributions + gains * (1 - taxRatePct / 100);
 }
 
-function advanceInvestmentAccount(state, contribution, annualRatePct, taxRatePct) {
-  const grossBalance = state.grossBalance * (1 + annualRatePct / 100 / 12) + contribution;
+function getCompoundingIntervalMonths(params) {
+  if (params.investmentCompounding === "yearly") return 12;
+  if (params.investmentCompounding === "maturity") return Math.max(1, Math.round(params.investmentMaturityMonths || 36));
+  return 1;
+}
+
+function advanceInvestmentAccount(state, contribution, annualRatePct, taxRatePct, month, params) {
+  let grossBalance = state.grossBalance;
   const contributions = state.contributions + contribution;
-  const afterTax = getAfterTaxInvestmentValue(grossBalance, contributions, taxRatePct);
+  const safeAnnualRatePct = Math.max(annualRatePct, 0);
+  const intervalMonths = getCompoundingIntervalMonths(params);
+  const isCompoundingMonth = intervalMonths > 0 && month % intervalMonths === 0;
+
+  if (isCompoundingMonth && safeAnnualRatePct > 0) {
+    const eventRate = Math.pow(1 + safeAnnualRatePct / 100, intervalMonths / 12) - 1;
+    const gain = grossBalance * eventRate;
+    if (params.investmentTaxMode === "realized") {
+      grossBalance += gain * (1 - taxRatePct / 100);
+    } else {
+      grossBalance += gain;
+    }
+  }
+
+  grossBalance += contribution;
+  const afterTax = params.investmentTaxMode === "realized"
+    ? grossBalance
+    : getAfterTaxInvestmentValue(grossBalance, contributions, taxRatePct);
   return { grossBalance, contributions, afterTax };
 }
 
@@ -615,6 +671,8 @@ function calcRentTrack(params, rentCosts, referenceMortgageRows, endMonth) {
       contribution,
       params.investMode === "on" ? params.investRatePct : 0,
       params.investmentTaxRatePct,
+      month,
+      params,
     );
     cumulativeContribution += contribution;
 
@@ -658,6 +716,8 @@ function calcBuyTrack(params, mortgageRows, rentCosts, endMonth) {
       contribution,
       params.investMode === "on" ? params.investRatePct : 0,
       params.investmentTaxRatePct,
+      month,
+      params,
     );
     cumulativeContribution += contribution;
 
@@ -782,6 +842,9 @@ function collectParams() {
     rentStepInterval: readNumber("rentStepInterval", 24, { min: 1, max: 360 }),
     investMode: byId("investMode").value,
     investRatePct: readNumber("investRate", 3.7, { min: 0, max: 100 }),
+    investmentTaxMode: byId("investmentTaxMode").value === "realized" ? "realized" : "exit",
+    investmentCompounding: ["monthly", "yearly", "maturity"].includes(byId("investmentCompounding").value) ? byId("investmentCompounding").value : "monthly",
+    investmentMaturityMonths: readNumber("investmentMaturityMonths", 36, { min: 1, max: 360 }),
     referenceIndex: byId("referenceIndex").value === "12M" ? "12M" : "6M",
     wiborSpreadPct: readNumber("wiborSpread", 0.5, { min: 0, max: 10 }),
     wibor6mStartPct: readNumber("wibor6m", 4.2, { min: 0, max: 100 }),
@@ -1154,7 +1217,7 @@ function initBindings() {
     "propertyValue", "ltv", "termMonths", "margin", "referenceIndex", "wiborSpread", "wibor6m", "wibor12m",
     "monthlySurplus", "homeGrowth", "entryCost", "saleCost", "ownerMonthlyCosts",
     "renterMonthlyExtras", "investmentTaxRate", "rentStart", "rentMode", "rentStep",
-    "rentStepInterval", "investMode", "investRate", "saleMonths", "overpaySchedule", "wiborSchedule6m", "wiborSchedule12m"
+    "rentStepInterval", "investMode", "investRate", "investmentTaxMode", "investmentCompounding", "investmentMaturityMonths", "saleMonths", "overpaySchedule", "wiborSchedule6m", "wiborSchedule12m"
   ];
   for (const id of quickIds) byId(id).addEventListener("change", recalc);
 
@@ -1184,6 +1247,19 @@ function initBindings() {
 }
 
 initBindings();
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -12,7 +12,7 @@
       <h1 data-i18n="hero.title">Kredyt vs Wynajem</h1>
       <p data-i18n="hero.subtitle">Porownanie majatku netto po sprzedazy mieszkania dla scenariuszy WIBOR.</p>
       <button id="langSwitch" class="lang-switch" type="button" aria-label="Switch language">
-        <span aria-hidden="true">??</span>
+        <span id="langSwitchFlag" class="lang-flag" aria-hidden="true"></span>
         <span id="langSwitchText">EN</span>
       </button>
     </header>
@@ -83,6 +83,20 @@
             </select>
           </label>
           <label><span data-i18n="form.investRate">Stopa inwestycji (%)</span><input id="investRate" type="number" value="4.65" step="0.01" /></label>
+          <label><span data-i18n="form.investTaxMode">Tryb rozliczenia podatku</span><span class="info-dot" data-i18n-title="info.investTaxMode" title=""></span>
+            <select id="investmentTaxMode">
+              <option value="exit" selected data-i18n="form.investTaxModeExit">Na wyjsciu (sprzedaz/wykup)</option>
+              <option value="realized" data-i18n="form.investTaxModeRealized">Od zrealizowanych odsetek/kuponu</option>
+            </select>
+          </label>
+          <label><span data-i18n="form.investCompounding">Kapitalizacja</span><span class="info-dot" data-i18n-title="info.investCompounding" title=""></span>
+            <select id="investmentCompounding">
+              <option value="monthly" data-i18n="form.investCompoundingMonthly">Miesieczna</option>
+              <option value="yearly" selected data-i18n="form.investCompoundingYearly">Roczna</option>
+              <option value="maturity" data-i18n="form.investCompoundingMaturity">Na zapadalnosci</option>
+            </select>
+          </label>
+          <label><span data-i18n="form.investMaturityMonths">Termin wykupu (miesiace)</span><span class="info-dot" data-i18n-title="info.investMaturity" title=""></span><input id="investmentMaturityMonths" type="number" value="36" min="1" max="360" step="1" /></label>
           <label class="readonly"><span data-i18n="form.startingCapital">Kapital startowy najemcy (PLN)</span><input id="startingCapital" type="number" value="100300" readonly /></label>
 
           <label class="full"><span data-i18n="form.saleMonths">Miesiace sprzedazy (CSV, np. <code>24,36,48</code>)</span>
@@ -204,6 +218,12 @@
   <script src="app.js"></script>
 </body>
 </html>
+
+
+
+
+
+
 
 
 
